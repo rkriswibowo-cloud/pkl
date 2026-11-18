@@ -153,7 +153,7 @@ $dashboard_url = $role_dashboard[$current_role] ?? '../index.php';
                             <span>Profil Saya</span>
                         </a>
                         
-                        <a href="<?= $base_path ?>change_password.php" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition">
+                        <a href="<?= $base_path ?>profile.php?ubah_kata_sandi=1#ubah-kata-sandi" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition">
                             <i class="fas fa-key mr-3 text-gray-400"></i>
                             <span>Ubah Password</span>
                         </a>

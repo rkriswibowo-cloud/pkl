@@ -39,6 +39,38 @@ $user = array_merge([
     'created_at' => date('Y-m-d H:i:s')
 ], $user);
 
+$password_error = '';
+$password_success = '';
+$password_submitted = $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password']);
+$password_open = $password_submitted || ($_GET['ubah_kata_sandi'] ?? null) === '1';
+
+if ($password_submitted) {
+    $current_password = $_POST['current_password'] ?? '';
+    $new_password = $_POST['new_password'] ?? '';
+    $confirm_password = $_POST['confirm_password'] ?? '';
+
+    if (!is_string($current_password) || !is_string($new_password) || !is_string($confirm_password)
+        || $current_password === '' || $new_password === '' || $confirm_password === '') {
+        $password_error = 'Lengkapi semua kolom kata sandi.';
+    } elseif ($new_password !== $confirm_password) {
+        $password_error = 'Kata sandi baru dan konfirmasi tidak cocok.';
+    } elseif (strlen($new_password) < 6) {
+        $password_error = 'Kata sandi baru minimal 6 karakter.';
+    } elseif (!password_verify($current_password, $user['password'])) {
+        $password_error = 'Kata sandi saat ini salah.';
+    } else {
+        $new_hash = password_hash($new_password, PASSWORD_DEFAULT);
+        $password_stmt = $conn->prepare('UPDATE users SET password = ? WHERE id = ?');
+        $password_stmt->bind_param('si', $new_hash, $user_id);
+        if ($password_stmt->execute()) {
+            $password_success = 'Kata sandi berhasil diubah.';
+        } else {
+            $password_error = 'Kata sandi gagal diubah.';
+        }
+        $password_stmt->close();
+    }
+}
+
 // Ambil data tambahan berdasarkan role
 $additional_data = [
     'nim' => '',
@@ -83,7 +115,7 @@ if (isset($_POST['upload_foto']) && isset($_FILES['profile_image'])) {
 }
 
 // Handle form submission untuk update profil
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && !isset($_POST['upload_foto'])) {
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && !$password_submitted && !isset($_POST['upload_foto'])) {
     // Ambil data dari form dengan null coalescing operator
     $nama = htmlspecialchars($_POST['nama'] ?? '');
     $email = htmlspecialchars($_POST['email'] ?? '');
@@ -254,7 +286,7 @@ include 'includes/header.php';
                 </div>
             </div>
 
-            <form method="POST" class="profile-form">
+            <form method="POST" action="profile.php" class="profile-form">
                 <div class="profile-fields">
 
                     <div>
@@ -358,12 +390,47 @@ include 'includes/header.php';
                     <button type="submit" class="admin-button admin-button-primary">Simpan Perubahan</button>
                 </div>
             </form>
+
+            <details id="ubah-kata-sandi" class="profile-password"<?= $password_open ? ' open' : '' ?>>
+                <summary>
+                    <span>Ubah Kata Sandi</span>
+                    <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                </summary>
+                <form method="POST" action="profile.php#ubah-kata-sandi" class="profile-form">
+                    <input type="hidden" name="change_password" value="1">
+                    <?php if ($password_success !== ''): ?>
+                        <p class="profile-feedback bg-green-50" role="status"><?= htmlspecialchars($password_success) ?></p>
+                    <?php endif; ?>
+                    <?php if ($password_error !== ''): ?>
+                        <p class="profile-feedback bg-red-50" role="alert"><?= htmlspecialchars($password_error) ?></p>
+                    <?php endif; ?>
+                    <div class="profile-fields">
+                        <div>
+                            <label for="current-password">Kata Sandi Saat Ini</label>
+                            <input type="password" id="current-password" name="current_password"
+                                   autocomplete="current-password" class="profile-field-control" required>
+                        </div>
+                        <div>
+                            <label for="new-password">Kata Sandi Baru</label>
+                            <input type="password" id="new-password" name="new_password"
+                                   autocomplete="new-password" class="profile-field-control" minlength="6" required>
+                        </div>
+                        <div>
+                            <label for="confirm-password">Konfirmasi Kata Sandi Baru</label>
+                            <input type="password" id="confirm-password" name="confirm_password"
+                                   autocomplete="new-password" class="profile-field-control" minlength="6" required>
+                        </div>
+                    </div>
+                    <div class="profile-form-actions">
+                        <button type="submit" class="admin-button admin-button-primary">Simpan Kata Sandi</button>
+                    </div>
+                </form>
+            </details>
         </section>
 
         <section class="dashboard-panel profile-panel profile-account" aria-labelledby="profile-account-title">
             <header class="profile-account-header">
                 <h2 id="profile-account-title">Informasi Akun</h2>
-                <a href="change_password.php" class="admin-list-back">Ubah Kata Sandi</a>
             </header>
             <dl class="profile-details">
                 <div>

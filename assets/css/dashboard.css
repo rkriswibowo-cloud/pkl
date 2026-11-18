@@ -589,7 +589,6 @@ body.pkl-dashboard {
 
 @container (min-width: 48rem) {
     .dashboard-form-assignments,
-    .dashboard-password-form,
     .dashboard-fields-three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
@@ -709,7 +708,26 @@ body.pkl-dashboard {
     gap: .25rem .5rem;
     padding-bottom: .5rem;
 }
-.profile-account-header .admin-list-back { margin-bottom: 0; color: var(--dashboard-accent); }
+.profile-password {
+    margin-top: 1rem;
+    padding-top: .625rem;
+    border-top: 1px solid var(--dashboard-border);
+    scroll-margin-top: 5rem;
+}
+.profile-password summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: .5rem;
+    padding: .375rem 0;
+    cursor: pointer;
+    list-style: none;
+    font-size: .875rem;
+    font-weight: 600;
+}
+.profile-password summary::-webkit-details-marker { display: none; }
+.profile-password summary:hover { color: var(--dashboard-accent); }
+.profile-password[open] summary i { rotate: 180deg; }
 .profile-details > div {
     display: flex;
     justify-content: space-between;
