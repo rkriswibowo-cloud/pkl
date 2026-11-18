@@ -34,8 +34,6 @@ switch ($current_role) {
 
 $dashboard_groups['Akun'] = [
     [$base_path . 'profile.php', 'Profil', 'fa-user-circle'],
-    [$base_path . 'change_password.php', 'Ubah Kata Sandi', 'fa-key'],
-    [$base_path . 'logout.php', 'Keluar', 'fa-right-from-bracket'],
 ];
 ?>
 <button type="button" id="dashboardSidebarBackdrop" class="dashboard-sidebar-backdrop"
