@@ -80,7 +80,9 @@ CREATE TABLE `logbook` (
   `catatan_dospem_pkl` text DEFAULT NULL,
   `catatan_dospem_lapangan` text DEFAULT NULL,
   `ttd_dospem_pkl` varchar(255) DEFAULT NULL,
+  `tgl_approval_dospem_pkl` datetime DEFAULT NULL,
   `ttd_dospem_lapangan` varchar(255) DEFAULT NULL,
+  `tgl_approval_dospem_lapangan` datetime DEFAULT NULL,
   `jam_datang` time DEFAULT NULL,
   `jam_pulang` time DEFAULT NULL,
   `unit_penempatan` varchar(100) DEFAULT NULL

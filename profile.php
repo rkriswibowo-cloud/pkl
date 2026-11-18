@@ -1,5 +1,7 @@
 <?php
 session_start();
+require_once __DIR__ . '/includes/impersonation.php';
+require_writable_session();
 require_once 'config/db.php';
 
 if (!isset($_SESSION['user'])) {
@@ -296,7 +298,7 @@ include 'includes/header.php';
                         <input type="text" name="nama" id="profile-nama"
                                value="<?= htmlspecialchars($user['nama']) ?>"
                                required
-                               class="profile-field-control">
+                               class="dashboard-field-control">
                     </div>
 
                     <div>
@@ -306,7 +308,7 @@ include 'includes/header.php';
                         <input type="email" name="email" id="profile-email"
                                value="<?= htmlspecialchars($user['username']) ?>"
                                required
-                               class="profile-field-control">
+                               class="dashboard-field-control">
                     </div>
 
                     <div>
@@ -317,7 +319,7 @@ include 'includes/header.php';
                                value="<?= htmlspecialchars($user['phone']) ?>"
                                placeholder="08xxxxxxxxxx"
                                pattern="[0-9]{10,13}"
-                               class="profile-field-control">
+                               class="dashboard-field-control">
                         <p class="text-xs text-gray-500 mt-1">Contoh: 081234567890</p>
                     </div>
 
@@ -330,7 +332,7 @@ include 'includes/header.php';
                             <input type="text" name="nim" id="profile-nim"
                                    value="<?= htmlspecialchars($additional_data['nim']) ?>"
                                    required
-                                   class="profile-field-control">
+                                   class="dashboard-field-control">
                         </div>
 
                         <div>
@@ -339,7 +341,7 @@ include 'includes/header.php';
                             </label>
                             <select name="prodi" id="profile-prodi"
                                     required
-                                    class="profile-field-control">
+                                    class="dashboard-field-control">
                                 <option value="">Pilih Prodi</option>
                                 <option value="Teknik Informatika" <?= ($user['prodi'] == 'Teknik Informatika') ? 'selected' : '' ?>>Teknik Informatika</option>
                                 <option value="Sistem Informasi" <?= ($user['prodi'] == 'Sistem Informasi') ? 'selected' : '' ?>>Sistem Informasi</option>
@@ -358,7 +360,7 @@ include 'includes/header.php';
                             <input type="text" name="jurusan" id="profile-jurusan"
                                    value="<?= htmlspecialchars($additional_data['jurusan']) ?>"
                                    placeholder="Contoh: Fakultas Teknik"
-                                   class="profile-field-control">
+                                   class="dashboard-field-control">
                         </div>
                     <?php endif; ?>
 
@@ -371,7 +373,7 @@ include 'includes/header.php';
                             <input type="text" name="nip" id="profile-nip"
                                    value="<?= htmlspecialchars($additional_data['nip']) ?>"
                                    placeholder="Contoh: 197001012000031001"
-                                   class="profile-field-control">
+                                   class="dashboard-field-control">
                         </div>
 
                         <div>
@@ -381,7 +383,7 @@ include 'includes/header.php';
                             <input type="text" name="bidang" id="profile-bidang"
                                    value="<?= htmlspecialchars($additional_data['bidang']) ?>"
                                    placeholder="Contoh: Pemrograman Web, Basis Data"
-                                   class="profile-field-control">
+                                   class="dashboard-field-control">
                         </div>
                     <?php endif; ?>
                 </div>
@@ -391,6 +393,7 @@ include 'includes/header.php';
                 </div>
             </form>
 
+            <?php if (!$is_impersonating): ?>
             <details id="ubah-kata-sandi" class="profile-password"<?= $password_open ? ' open' : '' ?>>
                 <summary>
                     <span>Ubah Kata Sandi</span>
@@ -408,17 +411,17 @@ include 'includes/header.php';
                         <div>
                             <label for="current-password">Kata Sandi Saat Ini</label>
                             <input type="password" id="current-password" name="current_password"
-                                   autocomplete="current-password" class="profile-field-control" required>
+                                   autocomplete="current-password" class="dashboard-field-control" required>
                         </div>
                         <div>
                             <label for="new-password">Kata Sandi Baru</label>
                             <input type="password" id="new-password" name="new_password"
-                                   autocomplete="new-password" class="profile-field-control" minlength="6" required>
+                                   autocomplete="new-password" class="dashboard-field-control" minlength="6" required>
                         </div>
                         <div>
                             <label for="confirm-password">Konfirmasi Kata Sandi Baru</label>
                             <input type="password" id="confirm-password" name="confirm_password"
-                                   autocomplete="new-password" class="profile-field-control" minlength="6" required>
+                                   autocomplete="new-password" class="dashboard-field-control" minlength="6" required>
                         </div>
                     </div>
                     <div class="profile-form-actions">
@@ -426,6 +429,7 @@ include 'includes/header.php';
                     </div>
                 </form>
             </details>
+            <?php endif; ?>
         </section>
 
         <section class="dashboard-panel profile-panel profile-account" aria-labelledby="profile-account-title">

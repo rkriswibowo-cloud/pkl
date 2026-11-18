@@ -30,6 +30,8 @@ $role_dashboard = [
 
 $current_role = $_SESSION['user']['role'];
 $dashboard_url = $role_dashboard[$current_role] ?? '../index.php';
+require_once __DIR__ . '/impersonation.php';
+$is_impersonating = isset($_SESSION['impersonator_id']);
 ?>
 
 <!DOCTYPE html>
@@ -75,7 +77,7 @@ $dashboard_url = $role_dashboard[$current_role] ?? '../index.php';
     <link rel="stylesheet" href="<?= $base_path ?>assets/css/dashboard.css">
     <script defer src="<?= $base_path ?>assets/js/dashboard-navigation.js"></script>
 </head>
-<body class="min-h-screen pkl-dashboard">
+<body class="min-h-screen pkl-dashboard<?= $is_impersonating ? ' is-impersonating' : '' ?>">
 
 <!-- Navbar -->
 <nav class="sticky top-0 z-50" aria-label="Bilah atas">
@@ -148,15 +150,23 @@ $dashboard_url = $role_dashboard[$current_role] ?? '../index.php';
                         </div>
                         
                         <!-- Menu Items -->
+                        <?php if ($current_role === 'admin'): ?>
+                            <a href="<?= $base_path ?>admin/users.php" class="flex items-center px-4 py-3 text-gray-700 transition">
+                                <i class="fas fa-users mr-3 text-gray-400" aria-hidden="true"></i>
+                                <span>Manajemen Pengguna</span>
+                            </a>
+                        <?php endif; ?>
                         <a href="<?= $base_path ?>profile.php" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition">
                             <i class="fas fa-user-circle mr-3 text-gray-400"></i>
                             <span>Profil Saya</span>
                         </a>
                         
+                        <?php if (!$is_impersonating): ?>
                         <a href="<?= $base_path ?>profile.php?ubah_kata_sandi=1#ubah-kata-sandi" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition">
                             <i class="fas fa-key mr-3 text-gray-400"></i>
                             <span>Ubah Password</span>
                         </a>
+                        <?php endif; ?>
                         
                         <!-- Role-specific links -->
                         <?php if ($current_role == 'mahasiswa'): ?>
@@ -254,3 +264,12 @@ $dashboard_url = $role_dashboard[$current_role] ?? '../index.php';
 <div class="dashboard-layout" id="dashboardLayout">
 <?php require __DIR__ . '/dashboard-sidebar.php'; ?>
 <main id="dashboardMain">
+<?php if ($is_impersonating): ?>
+    <div class="impersonation-notice" role="status">
+        <span>Melihat sebagai <strong><?= htmlspecialchars($_SESSION['user']['nama']) ?></strong> · Hanya lihat</span>
+        <form method="post" action="<?= $base_path ?>impersonate.php">
+            <input type="hidden" name="token" value="<?= impersonation_token() ?>">
+            <button type="submit" name="action" value="stop" class="admin-button">Kembali ke Admin</button>
+        </form>
+    </div>
+<?php endif; ?>

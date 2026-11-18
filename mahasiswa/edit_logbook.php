@@ -1,5 +1,7 @@
 <?php
 session_start();
+require_once __DIR__ . '/../includes/impersonation.php';
+require_writable_session();
 
 if (!isset($_SESSION['user']) || $_SESSION['user']['role'] != 'mahasiswa') {
     header("Location: ../index.php");

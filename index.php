@@ -18,6 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // Verifikasi password
         if (password_verify($password, $row['password'])) {
             session_regenerate_id(true);
+            unset($_SESSION['impersonator_id'], $_SESSION['impersonation_token']);
             $_SESSION['user'] = $row;
 
             // Remember me hanya menyimpan username, bukan password.

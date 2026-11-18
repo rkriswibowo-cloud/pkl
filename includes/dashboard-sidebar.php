@@ -1,7 +1,7 @@
 <?php
 $current_page = basename($_SERVER['PHP_SELF']);
 $active_menu_page = match ($current_page) {
-    'edit_user.php', 'tambah_user.php' => 'users.php',
+    'edit_user.php', 'tambah_user.php', 'reset_password.php' => 'users.php',
     'edit_logbook.php' => 'riwayat.php',
     default => $current_page,
 };

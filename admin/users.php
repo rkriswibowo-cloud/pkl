@@ -147,8 +147,21 @@ include '../includes/header.php';
                             <td><span class="users-role"><?= htmlspecialchars(str_replace('_', ' ', $user['role'])) ?></span></td>
                             <td>
                                 <div class="users-actions">
+                                    <?php if (in_array($user['role'], ['mahasiswa', 'dosen_pkl', 'dosen_lapangan'], true)): ?>
+                                        <form method="post" action="../impersonate.php">
+                                            <input type="hidden" name="token" value="<?= impersonation_token() ?>">
+                                            <input type="hidden" name="user_id" value="<?= (int) $user['id'] ?>">
+                                            <button type="submit" name="action" value="start" class="admin-button admin-button-quiet"
+                                                    aria-label="Impersonate as <?= htmlspecialchars($user['nama']) ?>">
+                                                <i class="fas fa-user-secret" aria-hidden="true"></i> Impersonate as
+                                            </button>
+                                        </form>
+                                    <?php endif; ?>
                                     <a href="edit_user.php?id=<?= $user['id'] ?>" class="admin-button admin-button-quiet">
                                         <i class="fas fa-pen-to-square" aria-hidden="true"></i> Edit
+                                    </a>
+                                    <a href="reset_password.php?id=<?= (int) $user['id'] ?>" class="admin-button admin-button-quiet">
+                                        <i class="fas fa-key" aria-hidden="true"></i> Reset Kata Sandi
                                     </a>
                                     <a href="?delete=<?= $user['id'] ?>" onclick="return confirm('Yakin hapus user ini? Semua data terkait juga akan dihapus.')" class="admin-button admin-button-danger">
                                         <i class="fas fa-trash-can" aria-hidden="true"></i> Hapus

@@ -1,5 +1,7 @@
 <?php
 session_start();
+require_once __DIR__ . '/../includes/impersonation.php';
+require_writable_session();
 
 if (!isset($_SESSION['user']) || $_SESSION['user']['role'] != 'mahasiswa') {
     header("Location: ../index.php");
@@ -9,9 +11,10 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] != 'mahasiswa') {
 include '../config/db.php';
 
 $error = "";
+$hari_options = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $hari = htmlspecialchars($_POST['hari']);
+    $hari = $_POST['hari'] ?? '';
     $tanggal = htmlspecialchars($_POST['tanggal']);
     $jam_datang = htmlspecialchars($_POST['jam_datang']);
     $jam_pulang = htmlspecialchars($_POST['jam_pulang']);
@@ -20,7 +23,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $id_mahasiswa = $_SESSION['user']['id'];
 
     // Validasi jam
-    if (strtotime($jam_pulang) <= strtotime($jam_datang)) {
+    if (!in_array($hari, $hari_options, true)) {
+        $error = 'Pilih hari Senin sampai Minggu.';
+    } elseif (strtotime($jam_pulang) <= strtotime($jam_datang)) {
         $error = "Jam pulang harus lebih besar dari jam datang";
     } else {
         $stmt = $conn->prepare("INSERT INTO logbook (id_mahasiswa, hari, tanggal, jam_datang, jam_pulang, unit_penempatan, kegiatan) VALUES (?, ?, ?, ?, ?, ?, ?)");
@@ -40,68 +45,80 @@ include '../includes/header.php';
 ?>
 
 
-<div class="dashboard-panel dashboard-section">
-    <h2 class="dashboard-title text-xl font-bold mb-4">Input Kegiatan Harian</h2>
-
-    <?php if ($error): ?>
-        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4"><?= $error ?></div>
-    <?php endif; ?>
-
-    <form method="post">
-        <div class="dashboard-fields dashboard-fields-three mb-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Hari</label>
-                <input type="text" name="hari" required 
-                       placeholder="Contoh: Senin" 
-                       class="mt-1 block w-full border border-gray-300 rounded-md p-2">
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Tanggal</label>
-                <input type="date" name="tanggal" required 
-                       class="mt-1 block w-full border border-gray-300 rounded-md p-2">
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Unit Penempatan</label>
-                <input type="text" name="unit_penempatan" required 
-                       placeholder="Contoh: Divisi IT" 
-                       class="mt-1 block w-full border border-gray-300 rounded-md p-2">
-            </div>
+<div class="dashboard-page">
+    <header class="admin-list-header">
+        <div>
+            <a href="dashboard.php" class="admin-list-back">
+                <i class="fas fa-arrow-left" aria-hidden="true"></i> Dashboard
+            </a>
+            <h2 class="dashboard-title">Input Kegiatan Harian</h2>
         </div>
+        <a href="riwayat.php" class="admin-button">
+            <i class="fas fa-clock-rotate-left" aria-hidden="true"></i> Riwayat Logbook
+        </a>
+    </header>
 
-        <div class="dashboard-fields mb-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Jam Datang</label>
-                <input type="time" name="jam_datang" required 
-                       class="mt-1 block w-full border border-gray-300 rounded-md p-2">
-            </div>
+    <div class="dashboard-panel dashboard-section">
+        <?php if ($error): ?>
+            <p class="profile-feedback bg-red-50" role="alert"><?= htmlspecialchars($error) ?></p>
+        <?php endif; ?>
 
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Jam Pulang</label>
-                <input type="time" name="jam_pulang" required 
-                       class="mt-1 block w-full border border-gray-300 rounded-md p-2">
-            </div>
-        </div>
+        <form method="post">
+            <fieldset class="logbook-fields"<?= $is_impersonating ? ' disabled' : '' ?>>
+                <div class="dashboard-fields dashboard-fields-three">
+                    <div>
+                        <label class="dashboard-field-label" for="logbook-hari">Hari</label>
+                        <select id="logbook-hari" name="hari" class="dashboard-field-control" required>
+                            <option value="">Pilih hari</option>
+                            <?php foreach ($hari_options as $hari_option): ?>
+                                <option value="<?= $hari_option ?>"<?= ($hari ?? '') === $hari_option ? ' selected' : '' ?>>
+                                    <?= $hari_option ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="dashboard-field-label" for="logbook-tanggal">Tanggal</label>
+                        <input id="logbook-tanggal" type="date" name="tanggal" value="<?= $tanggal ?? '' ?>"
+                               class="dashboard-field-control" required>
+                    </div>
+                    <div>
+                        <label class="dashboard-field-label" for="logbook-unit">Unit Penempatan</label>
+                        <input id="logbook-unit" type="text" name="unit_penempatan" value="<?= $unit_penempatan ?? '' ?>"
+                               placeholder="Contoh: Divisi IT" class="dashboard-field-control" required>
+                    </div>
+                </div>
 
-        <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700">Kegiatan (Deskripsi pekerjaan/hasil)</label>
-            <textarea name="kegiatan" rows="4" required 
-                      placeholder="Deskripsikan kegiatan yang dilakukan hari ini..." 
-                      class="mt-1 block w-full border border-gray-300 rounded-md p-2"></textarea>
-        </div>
+                <div class="dashboard-fields">
+                    <div>
+                        <label class="dashboard-field-label" for="logbook-datang">Jam Datang</label>
+                        <input id="logbook-datang" type="time" name="jam_datang" value="<?= $jam_datang ?? '' ?>"
+                               class="dashboard-field-control" required>
+                    </div>
+                    <div>
+                        <label class="dashboard-field-label" for="logbook-pulang">Jam Pulang</label>
+                        <input id="logbook-pulang" type="time" name="jam_pulang" value="<?= $jam_pulang ?? '' ?>"
+                               class="dashboard-field-control" required>
+                    </div>
+                </div>
 
-        <div class="dashboard-page-toolbar">
-            <div>
-                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Ajukan</button>
-                <button type="button" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700" 
-                        onclick="window.location.href='dashboard.php'">Kembali</button>
-            </div>
-            <div class="text-sm text-gray-500">
-                <p>Catatan: Logbook hanya bisa diedit selama status masih "pending"</p>
-            </div>
-        </div>
-    </form>
+                <div>
+                    <label class="dashboard-field-label" for="logbook-kegiatan">Uraian Kegiatan</label>
+                    <textarea id="logbook-kegiatan" name="kegiatan" rows="4" class="dashboard-field-control"
+                              placeholder="Tuliskan pekerjaan dan hasilnya." required><?= $kegiatan ?? '' ?></textarea>
+                </div>
+            </fieldset>
+
+            <?php if (!$is_impersonating): ?>
+                <div class="logbook-form-footer">
+                    <p>Logbook dapat diedit selama masih menunggu persetujuan kedua pembimbing.</p>
+                    <button type="submit" class="admin-button admin-button-primary">
+                        <i class="fas fa-paper-plane" aria-hidden="true"></i> Ajukan Logbook
+                    </button>
+                </div>
+            <?php endif; ?>
+        </form>
+    </div>
 </div>
 
 <?php include '../includes/footer.php'; ?>
