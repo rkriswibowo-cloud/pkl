@@ -77,7 +77,7 @@ include '../includes/header.php';
     <div class="admin-list-header">
         <div>
             <a href="dashboard.php" class="admin-list-back">
-                <i class="fas fa-arrow-left" aria-hidden="true"></i> Kembali ke Dashboard
+                <i class="fas fa-arrow-left" aria-hidden="true"></i> Dashboard
             </a>
             <h2 class="dashboard-title">Setting Bimbingan Mahasiswa</h2>
         </div>
