@@ -6,7 +6,7 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] != 'admin') {
     exit();
 }
 
-include '../config/db.php';
+require_once __DIR__ . '/../config/db.php';
 
 $bimbingan_feedback = '';
 
@@ -53,18 +53,45 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 }
 
 // Ambil semua mahasiswa dan dosen
-$mahasiswa_list = $conn->query("SELECT * FROM users WHERE role='mahasiswa'");
-$dosen_pkl_list = $conn->query("SELECT * FROM users WHERE role='dosen_pkl'");
-$dosen_lapangan_list = $conn->query("SELECT * FROM users WHERE role='dosen_lapangan'");
+$mahasiswa_list = $conn->query("
+    SELECT u.id, u.nama, u.username, u.prodi 
+    FROM users u 
+    WHERE u.role = 'mahasiswa' 
+    ORDER BY u.prodi ASC, u.nama ASC
+");
+
+$dosen_pkl_list = $conn->query("
+    SELECT u.id, u.nama, u.username, u.prodi, d.nip, d.bidang
+    FROM users u
+    LEFT JOIN dosen d ON u.id = d.id
+    WHERE u.role = 'dosen_pkl'
+    ORDER BY u.prodi ASC, u.nama ASC
+");
+
+$dosen_lapangan_list = $conn->query("
+    SELECT u.id, u.nama, u.username, u.phone 
+    FROM users u 
+    WHERE u.role = 'dosen_lapangan' 
+    ORDER BY u.nama ASC
+");
+
 $bimbingan_list = $conn->query("
-    SELECT b.id_mahasiswa, u.nama AS mahasiswa, pkl.nama AS dospem_pkl, lapangan.nama AS dospem_lapangan
+    SELECT 
+        b.id_mahasiswa, 
+        u.nama AS mahasiswa, 
+        u.prodi AS prodi_mahasiswa,
+        u.username AS nim_mahasiswa,
+        pkl.nama AS dospem_pkl, 
+        pkl.prodi AS prodi_dospem,
+        lapangan.nama AS dospem_lapangan
     FROM bimbingan b
     JOIN users u ON b.id_mahasiswa = u.id
     LEFT JOIN users pkl ON b.id_dospem_pkl = pkl.id
     LEFT JOIN users lapangan ON b.id_dospem_lapangan = lapangan.id
+    ORDER BY u.prodi ASC, u.nama ASC
 ");
 $page_title = 'Pengaturan Bimbingan Mahasiswa - Logbook PKL';
-include '../includes/header.php';
+include __DIR__ . '/../includes/header.php';
 ?>
 
 <?php if ($bimbingan_feedback !== ''): ?>
@@ -97,28 +124,54 @@ include '../includes/header.php';
                 <label class="block text-sm font-medium text-gray-700">Pilih Mahasiswa</label>
                 <select name="mahasiswa" required class="w-full px-4 py-2 border border-gray-300 rounded-md">
                     <option value="">-- Pilih Mahasiswa --</option>
-                    <?php while ($mhs = $mahasiswa_list->fetch_assoc()): ?>
-                        <option value="<?= $mhs['id'] ?>"><?= htmlspecialchars($mhs['nama']) ?></option>
+                    <?php 
+                    $curr_prodi_mhs = null;
+                    while ($mhs = $mahasiswa_list->fetch_assoc()): 
+                        $grp = $mhs['prodi'] ?: 'Umum / Belum Diisi';
+                        if ($curr_prodi_mhs !== $grp):
+                            if ($curr_prodi_mhs !== null) echo '</optgroup>';
+                            $curr_prodi_mhs = $grp;
+                            echo '<optgroup label="' . htmlspecialchars($curr_prodi_mhs) . '">';
+                        endif;
+                    ?>
+                        <option value="<?= $mhs['id'] ?>">
+                            <?= htmlspecialchars($mhs['nama']) ?> (NIM: <?= htmlspecialchars($mhs['username']) ?>)
+                        </option>
                     <?php endwhile; ?>
+                    <?php if ($curr_prodi_mhs !== null) echo '</optgroup>'; ?>
                 </select>
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700">Dosen Pembimbing PKL</label>
+                <label class="block text-sm font-medium text-gray-700">Dosen Pembimbing PKL (Kampus)</label>
                 <select name="dospem_pkl" required class="w-full px-4 py-2 border border-gray-300 rounded-md">
-                    <option value="">-- Pilih Dosen PKL --</option>
-                    <?php while ($dosen = $dosen_pkl_list->fetch_assoc()): ?>
-                        <option value="<?= $dosen['id'] ?>"><?= htmlspecialchars($dosen['nama']) ?></option>
+                    <option value="">-- Pilih Dosen Pembimbing PKL --</option>
+                    <?php 
+                    $curr_prodi_dosen = null;
+                    while ($dosen = $dosen_pkl_list->fetch_assoc()): 
+                        $grp = $dosen['prodi'] ?: 'Umum / Lainnya';
+                        if ($curr_prodi_dosen !== $grp):
+                            if ($curr_prodi_dosen !== null) echo '</optgroup>';
+                            $curr_prodi_dosen = $grp;
+                            echo '<optgroup label="Program Studi: ' . htmlspecialchars($curr_prodi_dosen) . '">';
+                        endif;
+                    ?>
+                        <option value="<?= $dosen['id'] ?>">
+                            <?= htmlspecialchars($dosen['nama']) ?> <?= !empty($dosen['nip']) ? ' (NIDN: ' . htmlspecialchars($dosen['nip']) . ')' : '' ?>
+                        </option>
                     <?php endwhile; ?>
+                    <?php if ($curr_prodi_dosen !== null) echo '</optgroup>'; ?>
                 </select>
             </div>
 
             <div>
                 <label class="block text-sm font-medium text-gray-700">Dosen Pembimbing Lapangan</label>
                 <select name="dospem_lapangan" required class="w-full px-4 py-2 border border-gray-300 rounded-md">
-                    <option value="">-- Pilih Dosen Lapangan --</option>
+                    <option value="">-- Pilih Pembimbing Lapangan --</option>
                     <?php while ($dosen = $dosen_lapangan_list->fetch_assoc()): ?>
-                        <option value="<?= $dosen['id'] ?>"><?= htmlspecialchars($dosen['nama']) ?></option>
+                        <option value="<?= $dosen['id'] ?>">
+                            <?= htmlspecialchars($dosen['nama']) ?> <?= !empty($dosen['phone']) ? ' (' . htmlspecialchars($dosen['phone']) . ')' : '' ?>
+                        </option>
                     <?php endwhile; ?>
                 </select>
             </div>
@@ -141,22 +194,63 @@ include '../includes/header.php';
             <thead class="bg-gray-50">
                 <tr>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mahasiswa</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dosen PKL</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dosen Lapangan</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dosen PKL (Kampus)</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pembimbing Lapangan</th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-                <?php while ($row = $bimbingan_list->fetch_assoc()): ?>
+                <?php if ($bimbingan_list && $bimbingan_list->num_rows > 0): ?>
+                    <?php while ($row = $bimbingan_list->fetch_assoc()): ?>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-user-graduate text-blue-500"></i>
+                                    <div>
+                                        <div><?= htmlspecialchars($row['mahasiswa']) ?></div>
+                                        <div class="text-xs text-gray-500">
+                                            <?= htmlspecialchars($row['nim_mahasiswa']) ?>
+                                            <?php if (!empty($row['prodi_mahasiswa'])): ?>
+                                                &bull; <span class="text-blue-600 font-semibold"><?= htmlspecialchars($row['prodi_mahasiswa']) ?></span>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                <?php if (!empty($row['dospem_pkl'])): ?>
+                                    <div><?= htmlspecialchars($row['dospem_pkl']) ?></div>
+                                    <?php if (!empty($row['prodi_dospem'])): ?>
+                                        <span class="inline-block px-2 py-0.5 text-[11px] font-semibold bg-blue-50 text-blue-700 rounded-full border border-blue-200">
+                                            <?= htmlspecialchars($row['prodi_dospem']) ?>
+                                        </span>
+                                    <?php endif; ?>
+                                <?php else: ?>
+                                    <span class="text-gray-400 italic">Belum diset</span>
+                                <?php endif; ?>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                <?php if (!empty($row['dospem_lapangan'])): ?>
+                                    <div class="flex items-center gap-1.5">
+                                        <i class="fas fa-building text-emerald-600 text-xs"></i>
+                                        <span><?= htmlspecialchars($row['dospem_lapangan']) ?></span>
+                                    </div>
+                                <?php else: ?>
+                                    <span class="text-gray-400 italic">Belum diset</span>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                    <?php endwhile; ?>
+                <?php else: ?>
                     <tr>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?= htmlspecialchars($row['mahasiswa']) ?></td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700"><?= htmlspecialchars($row['dospem_pkl']) ?: '–' ?></td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700"><?= htmlspecialchars($row['dospem_lapangan']) ?: '–' ?></td>
+                        <td colspan="3" class="px-6 py-6 text-center text-sm text-gray-500">
+                            Belum ada plotting bimbingan.
+                        </td>
                     </tr>
-                <?php endwhile; ?>
+                <?php endif; ?>
             </tbody>
         </table>
     </div>
 
 </div>
 
-<?php include '../includes/footer.php'; ?>
+<?php include __DIR__ . '/../includes/footer.php'; ?>

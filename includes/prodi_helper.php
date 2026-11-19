@@ -118,3 +118,125 @@ if (!function_exists('sync_prodi_from_obe')) {
         }
     }
 }
+
+if (!function_exists('sync_dosen_from_obe')) {
+    function sync_dosen_from_obe($conn) {
+        $obe_db = 'obe_cpl';
+
+        // 1. Ambil data dosen dari OBE (role_id 3 = Dosen, role_id 4 = Kaprodi)
+        $query = "
+            SELECT 
+                u.id AS obe_user_id,
+                u.username AS obe_username,
+                u.password AS obe_password,
+                u.nama_lengkap,
+                u.email,
+                u.nidn,
+                p.nama AS prodi_nama
+            FROM {$obe_db}.users u
+            LEFT JOIN {$obe_db}.program_studi p ON u.prodi_id = p.id
+            WHERE u.role_id IN (3, 4)
+            ORDER BY p.id, u.nama_lengkap
+        ";
+
+        $res = $conn->query($query);
+        if (!$res) {
+            return ['status' => false, 'message' => 'Gagal membaca data dari database OBE: ' . $conn->error];
+        }
+
+        $imported = 0;
+        $updated = 0;
+
+        while ($dosen = $res->fetch_assoc()) {
+            $nama = trim($dosen['nama_lengkap']);
+            $obe_username = trim($dosen['obe_username']);
+            $password = $dosen['obe_password'];
+            $prodi = trim($dosen['prodi_nama'] ?? '');
+            $nidn = trim($dosen['nidn'] ?? '');
+            if ($nidn === '' || $nidn === '-') {
+                $nidn = $obe_username;
+            }
+
+            // Cek apakah user sudah ada di pkl-logbook
+            $existing = null;
+
+            // 1. Cek berdasarkan username
+            $stmt = $conn->prepare("SELECT id, nama, username, prodi FROM users WHERE username = ? LIMIT 1");
+            $stmt->bind_param("s", $obe_username);
+            $stmt->execute();
+            $check_res = $stmt->get_result();
+            if ($row = $check_res->fetch_assoc()) {
+                $existing = $row;
+            }
+
+            // 2. Jika belum ketemu, cek berdasarkan nama
+            if (!$existing) {
+                $stmt = $conn->prepare("SELECT id, nama, username, prodi FROM users WHERE nama = ? AND role = 'dosen_pkl' LIMIT 1");
+                $stmt->bind_param("s", $nama);
+                $stmt->execute();
+                $check_res = $stmt->get_result();
+                if ($row = $check_res->fetch_assoc()) {
+                    $existing = $row;
+                }
+            }
+
+            // 3. Jika belum ketemu, cek berdasarkan NIP di tabel dosen
+            if (!$existing && !empty($nidn) && $nidn !== '-') {
+                $stmt = $conn->prepare("SELECT u.id, u.nama, u.username, u.prodi FROM users u JOIN dosen d ON u.id = d.id WHERE d.nip = ? LIMIT 1");
+                $stmt->bind_param("s", $nidn);
+                $stmt->execute();
+                $check_res = $stmt->get_result();
+                if ($row = $check_res->fetch_assoc()) {
+                    $existing = $row;
+                }
+            }
+
+            if ($existing) {
+                // Update prodi & role jika belum dosen_pkl
+                $user_id = $existing['id'];
+                $update_stmt = $conn->prepare("UPDATE users SET prodi = ?, role = 'dosen_pkl' WHERE id = ?");
+                $update_stmt->bind_param("si", $prodi, $user_id);
+                $update_stmt->execute();
+
+                // Upsert tabel dosen
+                $dosen_stmt = $conn->prepare("
+                    INSERT INTO dosen (id, nip, bidang) 
+                    VALUES (?, ?, ?) 
+                    ON DUPLICATE KEY UPDATE nip = VALUES(nip), bidang = VALUES(bidang)
+                ");
+                $dosen_stmt->bind_param("iss", $user_id, $nidn, $prodi);
+                $dosen_stmt->execute();
+
+                $updated++;
+            } else {
+                // Insert new user
+                $role = 'dosen_pkl';
+                $insert_stmt = $conn->prepare("
+                    INSERT INTO users (nama, username, password, role, prodi)
+                    VALUES (?, ?, ?, ?, ?)
+                ");
+                $insert_stmt->bind_param("sssss", $nama, $obe_username, $password, $role, $prodi);
+                if ($insert_stmt->execute()) {
+                    $new_id = $conn->insert_id;
+                    $dosen_stmt = $conn->prepare("
+                        INSERT INTO dosen (id, nip, bidang) 
+                        VALUES (?, ?, ?)
+                        ON DUPLICATE KEY UPDATE nip = VALUES(nip), bidang = VALUES(bidang)
+                    ");
+                    $dosen_stmt->bind_param("iss", $new_id, $nidn, $prodi);
+                    $dosen_stmt->execute();
+                    $imported++;
+                }
+            }
+        }
+
+        return [
+            'status' => true,
+            'imported' => $imported,
+            'updated' => $updated,
+            'message' => "Sinkronisasi dosen berhasil: {$imported} dosen baru ditambahkan, {$updated} data dosen diperbarui."
+        ];
+    }
+}
+
+

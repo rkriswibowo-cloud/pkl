@@ -8,9 +8,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
 
-    // Ambil data user berdasarkan username
-    $stmt = $conn->prepare("SELECT * FROM users WHERE username = ?");
-    $stmt->bind_param("s", $username);
+    // Ambil data user berdasarkan username atau NIP dosen
+    $stmt = $conn->prepare("
+        SELECT u.* FROM users u 
+        LEFT JOIN dosen d ON u.id = d.id 
+        WHERE u.username = ? OR (d.nip IS NOT NULL AND d.nip != '' AND d.nip = ?)
+        LIMIT 1
+    ");
+    $stmt->bind_param("ss", $username, $username);
     $stmt->execute();
     $result = $stmt->get_result();
 

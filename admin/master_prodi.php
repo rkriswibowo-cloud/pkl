@@ -98,14 +98,17 @@ include '../includes/header.php';
                     Data master program studi terintegrasi dari proyek OBE untuk penandatanganan lembar pengesahan PKL.
                 </p>
             </div>
-            <div class="flex items-center gap-3">
+            <div class="flex flex-wrap items-center gap-3">
                 <form action="master_prodi.php" method="POST" onsubmit="return confirm('Tarik dan sinkronkan data Program Studi & Kaprodi terbaru dari proyek OBE?')">
                     <input type="hidden" name="action" value="sync_obe">
                     <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow transition">
                         <i class="fas fa-rotate"></i> Sinkronkan dari Proyek OBE
                     </button>
                 </form>
-                <a href="dashboard.php" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold border transition" style="background: var(--dashboard-surface); border-color: var(--dashboard-border); color: var(--dashboard-text);">
+                <a href="dosen_pembimbing.php" class="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold border transition" style="background: var(--dashboard-surface); border-color: var(--dashboard-border); color: var(--dashboard-text);">
+                    <i class="fas fa-chalkboard-user text-blue-600"></i> Master Dosen
+                </a>
+                <a href="dashboard.php" class="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold border transition" style="background: var(--dashboard-surface); border-color: var(--dashboard-border); color: var(--dashboard-text);">
                     <i class="fas fa-arrow-left"></i> Dashboard
                 </a>
             </div>
@@ -357,3 +360,4 @@ function prepareSubmit() {
 </script>
 
 <?php include '../includes/footer.php'; ?>
+
