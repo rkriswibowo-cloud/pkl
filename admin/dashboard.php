@@ -53,10 +53,12 @@ include '../includes/header.php';
             </div>
 
             <!-- Tombol Setting Bimbingan -->
-            <a href="bimbingan.php" class="dashboard-action flex flex-col justify-center items-center py-6 px-4 rounded-lg shadow transition duration-200">
-                <i class="fas fa-user-tie text-2xl mb-2"></i>
-                <h3 class="font-semibold text-lg">Setting Bimbingan</h3>
-                <p class="text-sm text-center mt-1 text-white opacity-90">Atur siapa membimbing siapa</p>
+            <a href="bimbingan.php" class="dashboard-card-bimbingan flex flex-col justify-center items-center py-6 px-4 rounded-xl shadow transition duration-200">
+                <div class="bimbingan-icon-box">
+                    <i class="fas fa-user-tie text-2xl"></i>
+                </div>
+                <h3>Setting Bimbingan</h3>
+                <p>Atur siapa membimbing siapa</p>
             </a>
 
         </div>

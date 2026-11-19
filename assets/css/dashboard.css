@@ -422,6 +422,69 @@ body.pkl-dashboard {
 .pkl-dashboard .dashboard-action .text-white { color: var(--dashboard-muted); }
 .pkl-dashboard .dashboard-action:hover { background: var(--dashboard-raised); }
 
+/* Card Setting Bimbingan */
+.pkl-dashboard .dashboard-card-bimbingan {
+    background: linear-gradient(135deg, #4f46e5 0%, #2563eb 60%, #0284c7 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: #ffffff !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.35) !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    text-decoration: none !important;
+    position: relative;
+    overflow: hidden;
+}
+.pkl-dashboard .dashboard-card-bimbingan::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.25) 0%, transparent 65%);
+    pointer-events: none;
+    transition: transform 0.3s ease;
+}
+.pkl-dashboard .dashboard-card-bimbingan:hover {
+    background: linear-gradient(135deg, #4338ca 0%, #1d4ed8 60%, #0369a1 100%) !important;
+    transform: translateY(-3px) scale(1.015);
+    box-shadow: 0 8px 24px rgba(37, 99, 235, 0.5) !important;
+    color: #ffffff !important;
+}
+.pkl-dashboard .dashboard-card-bimbingan:hover::before {
+    transform: scale(1.3);
+}
+.pkl-dashboard .dashboard-card-bimbingan .bimbingan-icon-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.22);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+    color: #ffffff !important;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4), 0 2px 6px rgba(0, 0, 0, 0.15);
+    transition: transform 0.25s ease;
+}
+.pkl-dashboard .dashboard-card-bimbingan:hover .bimbingan-icon-box {
+    transform: scale(1.12) rotate(4deg);
+}
+.pkl-dashboard .dashboard-card-bimbingan h3 {
+    color: #ffffff !important;
+    font-size: 1.125rem;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+.pkl-dashboard .dashboard-card-bimbingan p {
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-size: 0.8rem;
+    margin: 4px 0 0 0;
+    text-align: center;
+}
+
 .pkl-dashboard .text-gray-900,
 .pkl-dashboard .text-gray-800,
 .pkl-dashboard .text-gray-700 { color: var(--dashboard-text); }
