@@ -27,10 +27,16 @@ if (isset($_GET['reset'])) {
         'app_logo_login'     => 'assets/images/uam1.png',
         'app_logo_secondary' => 'assets/images/dikti.png',
     ];
+    $label_maps = [
+        'app_logo'           => 'Logo Header Dashboard (Navbar)',
+        'app_favicon'        => 'Favicon Tab Browser',
+        'app_logo_login'     => 'Logo Login Utama (Kampus/Instansi)',
+        'app_logo_secondary' => 'Logo Sekunder (Dikti/Mitra)',
+    ];
 
     if (array_key_exists($reset_key, $default_maps)) {
         update_setting($reset_key, $default_maps[$reset_key]);
-        $success_msg = "Item berhasil dikembalikan ke pengaturan standar bawaan!";
+        $success_msg = ($label_maps[$reset_key] ?? 'Item') . " berhasil dikembalikan ke pengaturan default bawaan!";
     }
 }
 
@@ -144,121 +150,133 @@ include '../includes/header.php';
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
 
                 <!-- 1. Logo Navbar / Dashboard -->
-                <div class="dashboard-panel p-6 rounded-2xl flex flex-col justify-between" style="background: var(--dashboard-surface); border: 1px solid var(--dashboard-border);">
+                <div class="dashboard-panel p-5 sm:p-6 rounded-2xl flex flex-col justify-between" style="background: var(--dashboard-surface); border: 1px solid var(--dashboard-border);">
                     <div>
-                        <div class="flex items-center justify-between mb-4">
-                            <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-blue-500/10 text-blue-500 border border-blue-500/20">
-                                <i class="fas fa-image"></i> Header Navbar
+                        <div class="flex items-center justify-between gap-2 mb-4">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider bg-blue-500/10 text-blue-500 border border-blue-500/20 whitespace-nowrap leading-none">
+                                <i class="fas fa-image"></i> Navbar
                             </span>
-                            <a href="?reset=app_logo" onclick="return confirm('Kembalikan logo header ke default?')" class="text-xs text-red-400 hover:text-red-500 transition" title="Reset ke default">
-                                <i class="fas fa-rotate-left"></i> Reset Default
+                            <a href="?reset=app_logo" onclick="return confirm('Kembalikan logo header navbar ke default bawaan?')" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold text-rose-500 hover:text-white bg-rose-500/10 hover:bg-rose-600 border border-rose-500/20 transition-all duration-150 whitespace-nowrap shadow-sm leading-none" title="Kembalikan logo navbar ke default">
+                                <i class="fas fa-rotate-left text-[11px] leading-none"></i>
+                                <span class="leading-none">Reset Default</span>
                             </a>
                         </div>
 
-                        <h3 class="text-base font-bold mb-1" style="color: var(--dashboard-text);">Logo Dashboard (Navbar)</h3>
-                        <p class="text-xs mb-4" style="color: var(--dashboard-muted);">Ditampilkan di sudut kiri bilah navigasi atas di seluruh halaman sistem.</p>
+                        <div class="min-h-[56px] mb-2">
+                            <h3 class="text-base font-bold mb-1" style="color: var(--dashboard-text);">Logo Dashboard (Navbar)</h3>
+                            <p class="text-xs" style="color: var(--dashboard-muted);">Sudut kiri bilah navigasi atas di seluruh sistem.</p>
+                        </div>
 
                         <!-- Preview Area -->
-                        <div class="flex items-center justify-center p-6 rounded-xl border border-dashed mb-4" style="background: var(--dashboard-raised); border-color: var(--dashboard-border);">
-                            <div class="w-16 h-16 rounded-xl bg-white flex items-center justify-center p-2 shadow overflow-hidden">
-                                <img id="preview_app_logo" src="<?= $base_path . htmlspecialchars($app_logo) ?>?v=<?= time() ?>" alt="Preview Logo" class="max-w-full max-h-full object-contain">
+                        <div class="flex items-center justify-center h-28 p-3 rounded-xl border border-dashed mb-4" style="background: var(--dashboard-raised); border-color: var(--dashboard-border);">
+                            <div class="h-20 w-full flex items-center justify-center p-2 bg-white rounded-lg shadow-sm border border-slate-100 overflow-hidden">
+                                <img id="preview_app_logo" src="<?= $base_path . htmlspecialchars($app_logo) ?>?v=<?= time() ?>" alt="Preview Logo" class="max-h-full max-w-full object-contain">
                             </div>
                         </div>
                     </div>
 
                     <div>
                         <label class="block text-xs font-semibold mb-2" style="color: var(--dashboard-text);">Pilih File Baru</label>
-                        <input type="file" name="app_logo" accept="image/png,image/jpeg,image/webp,image/svg+xml" class="block w-full text-xs file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer" onchange="previewImage(this, 'preview_app_logo')">
+                        <input type="file" name="app_logo" accept="image/png,image/jpeg,image/webp,image/svg+xml" class="block w-full text-xs file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer" onchange="previewImage(this, 'preview_app_logo')">
                         <span class="text-[11px] block mt-1.5" style="color: var(--dashboard-muted);">Format: PNG, JPG, SVG, WEBP. Maks 3MB.</span>
                     </div>
                 </div>
 
                 <!-- 2. Favicon Browser -->
-                <div class="dashboard-panel p-6 rounded-2xl flex flex-col justify-between" style="background: var(--dashboard-surface); border: 1px solid var(--dashboard-border);">
+                <div class="dashboard-panel p-5 sm:p-6 rounded-2xl flex flex-col justify-between" style="background: var(--dashboard-surface); border: 1px solid var(--dashboard-border);">
                     <div>
-                        <div class="flex items-center justify-between mb-4">
-                            <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-purple-500/10 text-purple-500 border border-purple-500/20">
-                                <i class="fas fa-globe"></i> Tab Browser
+                        <div class="flex items-center justify-between gap-2 mb-4">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider bg-purple-500/10 text-purple-500 border border-purple-500/20 whitespace-nowrap leading-none">
+                                <i class="fas fa-globe"></i> Favicon
                             </span>
-                            <a href="?reset=app_favicon" onclick="return confirm('Kembalikan favicon ke default?')" class="text-xs text-red-400 hover:text-red-500 transition" title="Reset ke default">
-                                <i class="fas fa-rotate-left"></i> Reset Default
+                            <a href="?reset=app_favicon" onclick="return confirm('Kembalikan favicon tab browser ke default bawaan?')" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold text-rose-500 hover:text-white bg-rose-500/10 hover:bg-rose-600 border border-rose-500/20 transition-all duration-150 whitespace-nowrap shadow-sm leading-none" title="Kembalikan favicon ke default">
+                                <i class="fas fa-rotate-left text-[11px] leading-none"></i>
+                                <span class="leading-none">Reset Default</span>
                             </a>
                         </div>
 
-                        <h3 class="text-base font-bold mb-1" style="color: var(--dashboard-text);">Favicon Browser Tab</h3>
-                        <p class="text-xs mb-4" style="color: var(--dashboard-muted);">Ikon kecil di samping judul tab web browser pada semua halaman.</p>
+                        <div class="min-h-[56px] mb-2">
+                            <h3 class="text-base font-bold mb-1" style="color: var(--dashboard-text);">Favicon Tab Browser</h3>
+                            <p class="text-xs" style="color: var(--dashboard-muted);">Ikon kecil di samping judul tab web browser.</p>
+                        </div>
 
                         <!-- Preview Area -->
-                        <div class="flex items-center justify-center p-6 rounded-xl border border-dashed mb-4" style="background: var(--dashboard-raised); border-color: var(--dashboard-border);">
-                            <div class="w-16 h-16 rounded-xl bg-white flex items-center justify-center p-2 shadow overflow-hidden">
-                                <img id="preview_app_favicon" src="<?= $base_path . htmlspecialchars($app_favicon) ?>?v=<?= time() ?>" alt="Preview Favicon" class="max-w-full max-h-full object-contain">
+                        <div class="flex items-center justify-center h-28 p-3 rounded-xl border border-dashed mb-4" style="background: var(--dashboard-raised); border-color: var(--dashboard-border);">
+                            <div class="h-20 w-full flex items-center justify-center p-2 bg-white rounded-lg shadow-sm border border-slate-100 overflow-hidden">
+                                <img id="preview_app_favicon" src="<?= $base_path . htmlspecialchars($app_favicon) ?>?v=<?= time() ?>" alt="Preview Favicon" class="max-h-full max-w-full object-contain">
                             </div>
                         </div>
                     </div>
 
                     <div>
                         <label class="block text-xs font-semibold mb-2" style="color: var(--dashboard-text);">Pilih File Baru</label>
-                        <input type="file" name="app_favicon" accept="image/png,image/x-icon,image/svg+xml,image/webp,image/jpeg" class="block w-full text-xs file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-purple-600 file:text-white hover:file:bg-purple-700 cursor-pointer" onchange="previewImage(this, 'preview_app_favicon')">
+                        <input type="file" name="app_favicon" accept="image/png,image/x-icon,image/svg+xml,image/webp,image/jpeg" class="block w-full text-xs file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-purple-600 file:text-white hover:file:bg-purple-700 cursor-pointer" onchange="previewImage(this, 'preview_app_favicon')">
                         <span class="text-[11px] block mt-1.5" style="color: var(--dashboard-muted);">Format: PNG, ICO, SVG, WEBP. Maks 3MB.</span>
                     </div>
                 </div>
 
                 <!-- 3. Logo Halaman Login (Utama) -->
-                <div class="dashboard-panel p-6 rounded-2xl flex flex-col justify-between" style="background: var(--dashboard-surface); border: 1px solid var(--dashboard-border);">
+                <div class="dashboard-panel p-5 sm:p-6 rounded-2xl flex flex-col justify-between" style="background: var(--dashboard-surface); border: 1px solid var(--dashboard-border);">
                     <div>
-                        <div class="flex items-center justify-between mb-4">
-                            <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-                                <i class="fas fa-right-to-bracket"></i> Login & Register
+                        <div class="flex items-center justify-between gap-2 mb-4">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 whitespace-nowrap leading-none">
+                                <i class="fas fa-right-to-bracket"></i> Login Utama
                             </span>
-                            <a href="?reset=app_logo_login" onclick="return confirm('Kembalikan logo login ke default?')" class="text-xs text-red-400 hover:text-red-500 transition" title="Reset ke default">
-                                <i class="fas fa-rotate-left"></i> Reset Default
+                            <a href="?reset=app_logo_login" onclick="return confirm('Kembalikan logo login utama ke default bawaan?')" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold text-rose-500 hover:text-white bg-rose-500/10 hover:bg-rose-600 border border-rose-500/20 transition-all duration-150 whitespace-nowrap shadow-sm leading-none" title="Kembalikan logo login ke default">
+                                <i class="fas fa-rotate-left text-[11px] leading-none"></i>
+                                <span class="leading-none">Reset Default</span>
                             </a>
                         </div>
 
-                        <h3 class="text-base font-bold mb-1" style="color: var(--dashboard-text);">Logo Login Utama (Kampus/Instansi)</h3>
-                        <p class="text-xs mb-4" style="color: var(--dashboard-muted);">Logo instansi utama yang tampil di bagian atas formulir login dan pendaftaran.</p>
+                        <div class="min-h-[56px] mb-2">
+                            <h3 class="text-base font-bold mb-1" style="color: var(--dashboard-text);">Logo Login (Instansi)</h3>
+                            <p class="text-xs" style="color: var(--dashboard-muted);">Logo instansi di formulir login & pendaftaran.</p>
+                        </div>
 
                         <!-- Preview Area -->
-                        <div class="flex items-center justify-center p-6 rounded-xl border border-dashed mb-4" style="background: var(--dashboard-raised); border-color: var(--dashboard-border);">
-                            <div class="w-28 h-20 bg-white rounded-xl flex items-center justify-center p-2 shadow overflow-hidden">
-                                <img id="preview_app_logo_login" src="<?= $base_path . htmlspecialchars($app_logo_login) ?>?v=<?= time() ?>" alt="Preview Logo Login" class="max-w-full max-h-full object-contain">
+                        <div class="flex items-center justify-center h-28 p-3 rounded-xl border border-dashed mb-4" style="background: var(--dashboard-raised); border-color: var(--dashboard-border);">
+                            <div class="h-20 w-full flex items-center justify-center p-2 bg-white rounded-lg shadow-sm border border-slate-100 overflow-hidden">
+                                <img id="preview_app_logo_login" src="<?= $base_path . htmlspecialchars($app_logo_login) ?>?v=<?= time() ?>" alt="Preview Logo Login" class="max-h-full max-w-full object-contain">
                             </div>
                         </div>
                     </div>
 
                     <div>
                         <label class="block text-xs font-semibold mb-2" style="color: var(--dashboard-text);">Pilih File Baru</label>
-                        <input type="file" name="app_logo_login" accept="image/png,image/jpeg,image/webp,image/svg+xml" class="block w-full text-xs file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-600 file:text-white hover:file:bg-emerald-700 cursor-pointer" onchange="previewImage(this, 'preview_app_logo_login')">
+                        <input type="file" name="app_logo_login" accept="image/png,image/jpeg,image/webp,image/svg+xml" class="block w-full text-xs file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-600 file:text-white hover:file:bg-emerald-700 cursor-pointer" onchange="previewImage(this, 'preview_app_logo_login')">
                         <span class="text-[11px] block mt-1.5" style="color: var(--dashboard-muted);">Format: PNG, JPG, SVG, WEBP. Maks 3MB.</span>
                     </div>
                 </div>
 
                 <!-- 4. Logo Sekunder (Kemendikbud / Dikti) -->
-                <div class="dashboard-panel p-6 rounded-2xl flex flex-col justify-between" style="background: var(--dashboard-surface); border: 1px solid var(--dashboard-border);">
+                <div class="dashboard-panel p-5 sm:p-6 rounded-2xl flex flex-col justify-between" style="background: var(--dashboard-surface); border: 1px solid var(--dashboard-border);">
                     <div>
-                        <div class="flex items-center justify-between mb-4">
-                            <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-amber-500/10 text-amber-500 border border-amber-500/20">
-                                <i class="fas fa-building-columns"></i> Logo Mitra / Dikti
+                        <div class="flex items-center justify-between gap-2 mb-4">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider bg-amber-500/10 text-amber-500 border border-amber-500/20 whitespace-nowrap leading-none">
+                                <i class="fas fa-building-columns"></i> Dikti / Mitra
                             </span>
-                            <a href="?reset=app_logo_secondary" onclick="return confirm('Kembalikan logo sekunder ke default?')" class="text-xs text-red-400 hover:text-red-500 transition" title="Reset ke default">
-                                <i class="fas fa-rotate-left"></i> Reset Default
+                            <a href="?reset=app_logo_secondary" onclick="return confirm('Kembalikan logo sekunder mitra/dikti ke default bawaan?')" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold text-rose-500 hover:text-white bg-rose-500/10 hover:bg-rose-600 border border-rose-500/20 transition-all duration-150 whitespace-nowrap shadow-sm leading-none" title="Kembalikan logo sekunder ke default">
+                                <i class="fas fa-rotate-left text-[11px] leading-none"></i>
+                                <span class="leading-none">Reset Default</span>
                             </a>
                         </div>
 
-                        <h3 class="text-base font-bold mb-1" style="color: var(--dashboard-text);">Logo Sekunder (Dikti/Mitra)</h3>
-                        <p class="text-xs mb-4" style="color: var(--dashboard-muted);">Logo pendamping di sebelah logo instansi pada halaman login & pendaftaran.</p>
+                        <div class="min-h-[56px] mb-2">
+                            <h3 class="text-base font-bold mb-1" style="color: var(--dashboard-text);">Logo Sekunder (Dikti/Mitra)</h3>
+                            <p class="text-xs" style="color: var(--dashboard-muted);">Logo pendamping di samping logo instansi utama.</p>
+                        </div>
 
                         <!-- Preview Area -->
-                        <div class="flex items-center justify-center p-6 rounded-xl border border-dashed mb-4" style="background: var(--dashboard-raised); border-color: var(--dashboard-border);">
-                            <div class="w-28 h-20 bg-white rounded-xl flex items-center justify-center p-2 shadow overflow-hidden">
-                                <img id="preview_app_logo_secondary" src="<?= $base_path . htmlspecialchars($app_logo_secondary) ?>?v=<?= time() ?>" alt="Preview Logo Sekunder" class="max-w-full max-h-full object-contain">
+                        <div class="flex items-center justify-center h-28 p-3 rounded-xl border border-dashed mb-4" style="background: var(--dashboard-raised); border-color: var(--dashboard-border);">
+                            <div class="h-20 w-full flex items-center justify-center p-2 bg-white rounded-lg shadow-sm border border-slate-100 overflow-hidden">
+                                <img id="preview_app_logo_secondary" src="<?= $base_path . htmlspecialchars($app_logo_secondary) ?>?v=<?= time() ?>" alt="Preview Logo Sekunder" class="max-h-full max-w-full object-contain">
                             </div>
                         </div>
                     </div>
 
                     <div>
                         <label class="block text-xs font-semibold mb-2" style="color: var(--dashboard-text);">Pilih File Baru</label>
-                        <input type="file" name="app_logo_secondary" accept="image/png,image/jpeg,image/webp,image/svg+xml" class="block w-full text-xs file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-600 file:text-white hover:file:bg-amber-700 cursor-pointer" onchange="previewImage(this, 'preview_app_logo_secondary')">
+                        <input type="file" name="app_logo_secondary" accept="image/png,image/jpeg,image/webp,image/svg+xml" class="block w-full text-xs file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-600 file:text-white hover:file:bg-amber-700 cursor-pointer" onchange="previewImage(this, 'preview_app_logo_secondary')">
                         <span class="text-[11px] block mt-1.5" style="color: var(--dashboard-muted);">Format: PNG, JPG, SVG, WEBP. Maks 3MB.</span>
                     </div>
                 </div>
