@@ -17,6 +17,7 @@ switch ($current_role) {
             [$base_path . 'admin/dosen_pembimbing.php', 'Dosen Pembimbing', 'fa-id-badge'],
             [$base_path . 'admin/logbooks.php', 'Logbook', 'fa-book'],
             [$base_path . 'admin/penilaian.php', 'Rekap Nilai PKL', 'fa-award'],
+            [$base_path . 'admin/verifikasi_pengesahan.php', 'Pengesahan (Kaprodi)', 'fa-stamp'],
         ];
         break;
     case 'mahasiswa':
@@ -24,18 +25,21 @@ switch ($current_role) {
             [$base_path . 'mahasiswa/input_logbook.php', 'Input Logbook', 'fa-plus-circle'],
             [$base_path . 'mahasiswa/riwayat.php', 'Riwayat Logbook', 'fa-clock-rotate-left'],
             [$base_path . 'mahasiswa/nilai.php', 'Transkrip Nilai PKL', 'fa-award'],
+            [$base_path . 'mahasiswa/pengesahan.php', 'Lembar Pengesahan', 'fa-file-signature'],
         ];
         break;
     case 'dosen_pkl':
         $dashboard_groups['Bimbingan PKL'] = [
             [($current_page === 'dashboard.php' ? '' : $dashboard_url) . '#persetujuan-logbook', 'Persetujuan Logbook', 'fa-circle-check'],
             [$base_path . 'dosen_pkl/penilaian.php', 'Penilaian Bimbingan', 'fa-award'],
+            [$base_path . 'dosen_pkl/verifikasi_berkas.php', 'Verifikasi Pengesahan', 'fa-file-circle-check'],
         ];
         break;
     case 'dosen_lapangan':
         $dashboard_groups['Bimbingan PKL'] = [
             [($current_page === 'dashboard.php' ? '' : $dashboard_url) . '#persetujuan-logbook', 'Persetujuan Logbook', 'fa-circle-check'],
             [$base_path . 'dosen_lapangan/penilaian.php', 'Penilaian Lapangan', 'fa-clipboard-check'],
+            [$base_path . 'dosen_lapangan/verifikasi_berkas.php', 'Verifikasi Pengesahan', 'fa-file-signature'],
         ];
         break;
 }

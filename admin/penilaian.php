@@ -494,3 +494,4 @@ function tutupDetailNilai() {
 </script>
 
 <?php include '../includes/footer.php'; ?>
+

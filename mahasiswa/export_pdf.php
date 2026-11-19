@@ -11,7 +11,11 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] != 'mahasiswa') {
 }
 
 include '../config/db.php';
+require_once '../includes/settings.php';
 $id_mahasiswa = $_SESSION['user']['id'];
+
+$kaprodi_nama = get_setting('kaprodi_nama', 'Rony Kriswibowo, S.Kom., M.Kom');
+$kaprodi_nip  = get_setting('kaprodi_nip', '198801152020121005');
 
 // Ambil data mahasiswa
 $mahasiswa = $conn->query("
@@ -172,20 +176,19 @@ $html = '
         .ttd-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 40px;
+            margin-top: 30px;
         }
         .ttd-table td {
             border: none;
-            padding: 0;
+            padding: 5px;
             text-align: center;
             vertical-align: top;
-            width: 33.33%;
         }
         .ttd-box {
             display: inline-block;
             text-align: center;
             padding: 0 15px;
-            min-height: 120px;
+            min-height: 100px;
         }
         .ttd-title {
             font-weight: bold;
@@ -364,22 +367,22 @@ $html .= '
         </tr>
     </table>
 
-    <!-- Tanda Tangan Horizontal menggunakan Tabel -->
-    <table class="ttd-table">
+    <!-- Tanda Tangan: 2 Pembimbing di Atas, Kaprodi di Bawah Tengah -->
+    <table class="ttd-table" style="margin-top: 30px;">
         <tr>
-            <!-- Kolom 1: Mahasiswa -->
-            <td>
+            <!-- Kolom 1: Pembimbing Lapangan -->
+            <td style="width: 50%;">
                 <div class="ttd-box">
-                    <div class="ttd-title">Mengetahui,</div>
-                    <div>Mahasiswa PKL</div>
+                    <div class="ttd-title">Menyetujui,</div>
+                    <div>Pembimbing Lapangan</div>
                     <div class="ttd-line"></div>
-                    <div class="ttd-name">' . htmlspecialchars($mahasiswa['nama'] ?? '') . '</div>
-                    <div class="ttd-detail">NIM: ' . htmlspecialchars($mahasiswa['nim'] ?? $mahasiswa['username']) . '</div>
+                    <div class="ttd-name">' . htmlspecialchars($bimbingan['dospem_lapangan'] ?? '-') . '</div>
+                    <div class="ttd-detail">NIP/NIK: ' . htmlspecialchars($bimbingan['nip_lapangan'] ?? '-') . '</div>
                 </div>
             </td>
             
             <!-- Kolom 2: Dosen Pembimbing PKL -->
-            <td>
+            <td style="width: 50%;">
                 <div class="ttd-box">
                     <div class="ttd-title">Menyetujui,</div>
                     <div>Dosen Pembimbing PKL</div>
@@ -388,15 +391,19 @@ $html .= '
                     <div class="ttd-detail">NIP: ' . htmlspecialchars($bimbingan['nip_pkl'] ?? '-') . '</div>
                 </div>
             </td>
-            
-            <!-- Kolom 3: Dosen Pembimbing Lapangan -->
-            <td>
-                <div class="ttd-box">
-                    <div class="ttd-title">Menyetujui,</div>
-                    <div>Dosen Pembimbing Lapangan</div>
+        </tr>
+    </table>
+
+    <!-- Baris 2: Mengetahui, Kaprodi di Tengah Bawah -->
+    <table class="ttd-table" style="margin-top: 20px;">
+        <tr>
+            <td align="center" style="width: 100%;">
+                <div class="ttd-box" style="width: 320px;">
+                    <div class="ttd-title">Mengetahui,</div>
+                    <div>Ketua Program Studi ' . htmlspecialchars($mahasiswa['jurusan'] ?? '') . '</div>
                     <div class="ttd-line"></div>
-                    <div class="ttd-name">' . htmlspecialchars($bimbingan['dospem_lapangan'] ?? '-') . '</div>
-                    <div class="ttd-detail">NIP: ' . htmlspecialchars($bimbingan['nip_lapangan'] ?? '-') . '</div>
+                    <div class="ttd-name">' . htmlspecialchars($kaprodi_nama) . '</div>
+                    <div class="ttd-detail">NIP: ' . htmlspecialchars($kaprodi_nip) . '</div>
                 </div>
             </td>
         </tr>
