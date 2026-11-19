@@ -105,7 +105,7 @@ include '../includes/header.php';
 ?>
 
 <div class="min-w-0">
-    <div class="dashboard-page max-w-5xl mx-auto">
+    <div class="dashboard-page w-full max-w-full">
 
         <!-- Header -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
@@ -141,7 +141,7 @@ include '../includes/header.php';
         <!-- Form Pengaturan -->
         <form action="edit_logo.php" method="POST" enctype="multipart/form-data">
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
 
                 <!-- 1. Logo Navbar / Dashboard -->
                 <div class="dashboard-panel p-6 rounded-2xl flex flex-col justify-between" style="background: var(--dashboard-surface); border: 1px solid var(--dashboard-border);">

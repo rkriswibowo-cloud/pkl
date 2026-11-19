@@ -80,3 +80,4 @@ if (!function_exists('update_setting')) {
         return false;
     }
 }
+

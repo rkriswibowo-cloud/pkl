@@ -16,7 +16,6 @@ switch ($current_role) {
             [$base_path . 'admin/bimbingan.php', 'Bimbingan', 'fa-chalkboard-user'],
             [$base_path . 'admin/dosen_pembimbing.php', 'Dosen Pembimbing', 'fa-id-badge'],
             [$base_path . 'admin/logbooks.php', 'Logbook', 'fa-book'],
-            [$base_path . 'admin/edit_logo.php', 'Edit Logo & Favicon', 'fa-palette'],
         ];
         break;
     case 'mahasiswa':
@@ -36,6 +35,12 @@ switch ($current_role) {
 $dashboard_groups['Akun'] = [
     [$base_path . 'profile.php', 'Profil', 'fa-user-circle'],
 ];
+
+if ($current_role === 'admin') {
+    $dashboard_groups['Pengaturan'] = [
+        [$base_path . 'admin/edit_logo.php', 'Edit Logo & Favicon', 'fa-palette'],
+    ];
+}
 ?>
 <button type="button" id="dashboardSidebarBackdrop" class="dashboard-sidebar-backdrop"
         aria-label="Tutup menu navigasi" tabindex="-1" hidden></button>
@@ -63,15 +68,27 @@ $dashboard_groups['Akun'] = [
                 <?php if ($label === 'Utama'): ?>
                     <p><i class="fas fa-compass" aria-hidden="true"></i> Menu Utama</p>
                 <?php else: ?>
+                    <?php
+                    $group_slug = match ($label) {
+                        'Akun' => 'account',
+                        'Pengaturan' => 'settings',
+                        default => 'pkl',
+                    };
+                    $group_icon = match ($label) {
+                        'Akun' => 'fa-user',
+                        'Pengaturan' => 'fa-sliders',
+                        default => 'fa-layer-group',
+                    };
+                    ?>
                     <button type="button" class="dashboard-group-heading" aria-expanded="true"
-                            aria-controls="dashboard-group-<?= $label === 'Akun' ? 'account' : 'pkl' ?>">
-                        <i class="fas <?= $label === 'Akun' ? 'fa-user' : 'fa-layer-group' ?>" aria-hidden="true"></i>
+                            aria-controls="dashboard-group-<?= $group_slug ?>">
+                        <i class="fas <?= $group_icon ?>" aria-hidden="true"></i>
                         <span><?= htmlspecialchars($label) ?></span>
                         <span class="dashboard-group-count" aria-hidden="true"><?= count($links) ?></span>
                         <i class="fas fa-chevron-down dashboard-group-chevron" aria-hidden="true"></i>
                     </button>
                 <?php endif; ?>
-                <div class="dashboard-group-links" id="dashboard-group-<?= $label === 'Utama' ? 'main' : ($label === 'Akun' ? 'account' : 'pkl') ?>">
+                <div class="dashboard-group-links" id="dashboard-group-<?= $label === 'Utama' ? 'main' : (match ($label) { 'Akun' => 'account', 'Pengaturan' => 'settings', default => 'pkl' }) ?>">
                     <?php foreach ($links as [$href, $label_link, $icon]): ?>
                         <?php $menu_page = basename($href); ?>
                         <a href="<?= htmlspecialchars($href) ?>" title="<?= htmlspecialchars($label_link) ?>"
