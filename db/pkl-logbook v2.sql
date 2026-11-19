@@ -234,6 +234,25 @@ ALTER TABLE `logbook`
 --
 ALTER TABLE `mahasiswa`
   ADD CONSTRAINT `mahasiswa_ibfk_1` FOREIGN KEY (`id`) REFERENCES `users` (`id`);
+
+--
+-- Struktur dari tabel `settings`
+--
+CREATE TABLE IF NOT EXISTS `settings` (
+  `setting_key` varchar(50) NOT NULL,
+  `setting_value` text NOT NULL,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`setting_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT IGNORE INTO `settings` (`setting_key`, `setting_value`) VALUES
+('app_logo', 'assets/images/dashboard-logo-uam.png'),
+('app_favicon', 'assets/images/dashboard-logo-uam.png'),
+('app_logo_login', 'assets/images/uam1.png'),
+('app_logo_secondary', 'assets/images/dikti.png'),
+('app_name', 'Logbook PKL'),
+('app_desc', 'Sistem Monitoring Praktik Kerja Lapangan');
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

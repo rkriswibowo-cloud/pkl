@@ -55,7 +55,13 @@ $remember_checked = !empty($remembered_username);
     <title>Sign In - Sistem Logbook PKL</title>
 
     <!-- Favicon -->
-    <link rel="icon" href="assets/images/logo.png" type="image/x-icon">
+    <?php
+    $app_favicon = function_exists('get_setting') ? get_setting('app_favicon', 'assets/images/logo.png') : 'assets/images/logo.png';
+    $app_logo_login = function_exists('get_setting') ? get_setting('app_logo_login', 'assets/images/uam1.png') : 'assets/images/uam1.png';
+    $app_logo_sec   = function_exists('get_setting') ? get_setting('app_logo_secondary', 'assets/images/dikti.png') : 'assets/images/dikti.png';
+    $app_name       = function_exists('get_setting') ? get_setting('app_name', 'Logbook PKL') : 'Logbook PKL';
+    ?>
+    <link rel="icon" href="<?= htmlspecialchars($app_favicon) ?>?v=<?= file_exists(__DIR__ . '/' . $app_favicon) ? filemtime(__DIR__ . '/' . $app_favicon) : time() ?>" type="image/x-icon">
 
     <!-- Google Fonts: Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -342,8 +348,12 @@ $remember_checked = !empty($remembered_username);
     <div class="login-wrapper">
         <!-- Two Logos Section -->
         <div class="logos-container">
-            <img src="assets/images/dikti.png" alt="Logo DIKTI" class="logo-img">
-            <img src="assets/images/uam1.png" alt="Logo Universitas Anwar Medika" class="logo-img">
+            <?php if (!empty($app_logo_sec) && file_exists(__DIR__ . '/' . $app_logo_sec)): ?>
+                <img src="<?= htmlspecialchars($app_logo_sec) ?>?v=<?= filemtime(__DIR__ . '/' . $app_logo_sec) ?>" alt="Logo Sekunder" class="logo-img">
+            <?php endif; ?>
+            <?php if (!empty($app_logo_login) && file_exists(__DIR__ . '/' . $app_logo_login)): ?>
+                <img src="<?= htmlspecialchars($app_logo_login) ?>?v=<?= filemtime(__DIR__ . '/' . $app_logo_login) ?>" alt="Logo Utama" class="logo-img">
+            <?php endif; ?>
         </div>
 
         <h2 class="page-title">Sign In</h2>

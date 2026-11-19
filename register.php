@@ -35,7 +35,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <title>Register - Sistem Logbook PKL</title>
 
     <!-- Favicon -->
-    <link rel="icon" href="assets/images/logo.png" type="image/x-icon">
+    <?php
+    $app_favicon = function_exists('get_setting') ? get_setting('app_favicon', 'assets/images/logo.png') : 'assets/images/logo.png';
+    $app_logo_login = function_exists('get_setting') ? get_setting('app_logo_login', 'assets/images/uam1.png') : 'assets/images/uam1.png';
+    $app_logo_sec   = function_exists('get_setting') ? get_setting('app_logo_secondary', 'assets/images/dikti.png') : 'assets/images/dikti.png';
+    ?>
+    <link rel="icon" href="<?= htmlspecialchars($app_favicon) ?>?v=<?= file_exists(__DIR__ . '/' . $app_favicon) ? filemtime(__DIR__ . '/' . $app_favicon) : time() ?>" type="image/x-icon">
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -73,8 +78,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <div class="w-full max-w-md bg-white rounded-xl shadow-lg p-6 sm:p-8 space-y-6 transition-all duration-300 hover:shadow-xl">
         <!-- Logo Section -->
         <div class="flex justify-between mb-4 logo-container">
-            <img src="assets/images/uam1.png" alt="Logo Universitas Anwar Medika" class="h-24 w-24 sm:h-32 sm:w-32">
-            <img src="assets/images/dikti.png" alt="Logo Dikti" class="h-24 w-24 sm:h-32 sm:w-32">
+            <?php if (!empty($app_logo_login) && file_exists(__DIR__ . '/' . $app_logo_login)): ?>
+                <img src="<?= htmlspecialchars($app_logo_login) ?>?v=<?= filemtime(__DIR__ . '/' . $app_logo_login) ?>" alt="Logo Utama" class="h-24 w-24 sm:h-32 sm:w-32 object-contain">
+            <?php endif; ?>
+            <?php if (!empty($app_logo_sec) && file_exists(__DIR__ . '/' . $app_logo_sec)): ?>
+                <img src="<?= htmlspecialchars($app_logo_sec) ?>?v=<?= filemtime(__DIR__ . '/' . $app_logo_sec) ?>" alt="Logo Sekunder" class="h-24 w-24 sm:h-32 sm:w-32 object-contain">
+            <?php endif; ?>
         </div>
 
         <h4 class="text-xl sm:text-2xl font-bold text-center mb-4">Register Pengguna</h4>

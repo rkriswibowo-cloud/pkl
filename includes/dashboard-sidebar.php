@@ -16,6 +16,7 @@ switch ($current_role) {
             [$base_path . 'admin/bimbingan.php', 'Bimbingan', 'fa-chalkboard-user'],
             [$base_path . 'admin/dosen_pembimbing.php', 'Dosen Pembimbing', 'fa-id-badge'],
             [$base_path . 'admin/logbooks.php', 'Logbook', 'fa-book'],
+            [$base_path . 'admin/edit_logo.php', 'Edit Logo & Favicon', 'fa-palette'],
         ];
         break;
     case 'mahasiswa':

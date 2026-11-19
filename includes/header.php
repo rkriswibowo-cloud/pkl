@@ -41,7 +41,13 @@ $is_impersonating = isset($_SESSION['impersonator_id']);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= isset($page_title) ? $page_title : (ucfirst($current_role) . ' - Sistem Logbook PKL') ?></title>
     <!-- Favicon -->
-    <link rel="icon" href="<?= $base_path ?>assets/images/dashboard-logo-uam.png" type="image/png">
+    <?php
+    $app_favicon = function_exists('get_setting') ? get_setting('app_favicon', 'assets/images/dashboard-logo-uam.png') : 'assets/images/dashboard-logo-uam.png';
+    $app_logo    = function_exists('get_setting') ? get_setting('app_logo', 'assets/images/dashboard-logo-uam.png') : 'assets/images/dashboard-logo-uam.png';
+    $app_name    = function_exists('get_setting') ? get_setting('app_name', 'Logbook PKL') : 'Logbook PKL';
+    $app_desc    = function_exists('get_setting') ? get_setting('app_desc', 'Sistem Monitoring Praktik Kerja Lapangan') : 'Sistem Monitoring Praktik Kerja Lapangan';
+    ?>
+    <link rel="icon" href="<?= $base_path . htmlspecialchars($app_favicon) ?>?v=<?= file_exists(__DIR__ . '/../' . $app_favicon) ? filemtime(__DIR__ . '/../' . $app_favicon) : time() ?>" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -91,12 +97,18 @@ $is_impersonating = isset($_SESSION['impersonator_id']);
                 </button>
                 <!-- Logo -->
                 <a href="<?= $dashboard_url ?>" class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow">
-                        <i class="fas fa-graduation-cap text-blue-600 text-lg" aria-hidden="true"></i>
-                    </div>
+                    <?php if (!empty($app_logo) && file_exists(__DIR__ . '/../' . $app_logo)): ?>
+                        <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow overflow-hidden p-1">
+                            <img src="<?= $base_path . htmlspecialchars($app_logo) ?>?v=<?= filemtime(__DIR__ . '/../' . $app_logo) ?>" alt="Logo <?= htmlspecialchars($app_name) ?>" class="max-w-full max-h-full object-contain">
+                        </div>
+                    <?php else: ?>
+                        <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow">
+                            <i class="fas fa-graduation-cap text-blue-600 text-lg" aria-hidden="true"></i>
+                        </div>
+                    <?php endif; ?>
                     <div class="hidden md:block">
-                        <h1 class="text-lg font-bold text-white">Logbook PKL</h1>
-                        <p class="text-xs text-blue-100">Sistem Monitoring Praktik Kerja Lapangan</p>
+                        <h1 class="text-lg font-bold text-white"><?= htmlspecialchars($app_name) ?></h1>
+                        <p class="text-xs text-blue-100"><?= htmlspecialchars($app_desc) ?></p>
                     </div>
                 </a>
                 
