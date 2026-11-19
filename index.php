@@ -375,7 +375,7 @@ $remember_checked = !empty($remembered_username);
                                    value="<?= htmlspecialchars($remembered_username, ENT_QUOTES, 'UTF-8') ?>"
                                    required
                                    autocomplete="username"
-                                   placeholder="rkriswibowo@gmail.com"
+                                   placeholder=""
                                    class="form-input">
                         </div>
                     </div>
@@ -389,7 +389,7 @@ $remember_checked = !empty($remembered_username);
                                    id="password"
                                    required
                                    autocomplete="current-password"
-                                   placeholder="••••••••••••"
+                                   placeholder=""
                                    class="form-input password-input">
                             <button type="button" class="password-toggle" id="togglePassword" aria-label="Tampilkan password">
                                 <i class="fas fa-eye"></i>
