@@ -1,14 +1,11 @@
 <?php 
 // Pastikan session_start() hanya dipanggil sekali
 if (session_status() === PHP_SESSION_NONE) {
+    session_name('PKL_SESSID');
     session_start();
 }
 
-// Redirect berdasarkan role jika belum login
-if (!isset($_SESSION['user'])) {
-    header("Location: ../index.php");
-    exit();
-}
+require_once __DIR__ . '/../../sso_shared.php';
 
 // Tentukan base path berdasarkan lokasi file
 $base_path = '';
@@ -20,9 +17,50 @@ if (strpos($_SERVER['PHP_SELF'], 'admin/') !== false) {
     $base_path = '../';
 }
 
+// Auto-login jika SSO su12345 aktif dari proyek lain
+if (!isset($_SESSION['user']) && sso_can_auto_login('su12345')) {
+    global $conn;
+    if (!isset($conn)) {
+        require_once __DIR__ . '/../config/db.php';
+    }
+    if (isset($conn) && $conn) {
+        $stmt_sso = $conn->prepare("SELECT * FROM users WHERE username = 'su12345' LIMIT 1");
+        $stmt_sso->execute();
+        $res_sso = $stmt_sso->get_result();
+        if ($sso_user = $res_sso->fetch_assoc()) {
+            $_SESSION['user'] = $sso_user;
+            $_SESSION['su_sso_token'] = $_COOKIE[SSO_COOKIE_NAME] ?? '';
+        }
+    }
+}
+
+// Redirect berdasarkan role jika belum login
+if (!isset($_SESSION['user'])) {
+    header("Location: " . $base_path . "index.php");
+    exit();
+}
+
+// Cek Sinkronisasi Logout SSO untuk akun su12345
+if (($_SESSION['user']['username'] ?? '') === 'su12345') {
+    if (!sso_is_active('su12345', $_SESSION['su_sso_token'] ?? null)) {
+        $_SESSION = [];
+        if (ini_get("session.use_cookies")) {
+            $params = session_get_cookie_params();
+            setcookie(session_name(), '', time() - 42000,
+                $params["path"], $params["domain"],
+                $params["secure"], $params["httponly"]
+            );
+        }
+        session_destroy();
+        header("Location: " . $base_path . "index.php");
+        exit();
+    }
+}
+
 // Role-specific dashboard URLs
 $role_dashboard = [
     'admin' => $base_path . 'admin/dashboard.php',
+    'superadmin' => $base_path . 'admin/dashboard.php',
     'mahasiswa' => $base_path . 'mahasiswa/dashboard.php',
     'dosen_pkl' => $base_path . 'dosen_pkl/dashboard.php',
     'dosen_lapangan' => $base_path . 'dosen_lapangan/dashboard.php'
@@ -40,6 +78,7 @@ $is_impersonating = isset($_SESSION['impersonator_id']);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= isset($page_title) ? $page_title : (ucfirst($current_role) . ' - Sistem Logbook PKL') ?></title>
+    <?= (($_SESSION['user']['username'] ?? '') === 'su12345') ? sso_render_client_sync_script($base_path . 'logout.php') : '' ?>
     <!-- Favicon -->
     <?php
     $app_favicon = function_exists('get_setting') ? get_setting('app_favicon', 'assets/images/dashboard-logo-uam.png') : 'assets/images/dashboard-logo-uam.png';

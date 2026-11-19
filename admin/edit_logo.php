@@ -2,7 +2,7 @@
 session_start();
 
 // Cek apakah user sudah login dan role adalah admin
-if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
+if (!isset($_SESSION['user']) || !in_array($_SESSION['user']['role'], ['admin', 'superadmin'])) {
     header("Location: ../index.php");
     exit();
 }

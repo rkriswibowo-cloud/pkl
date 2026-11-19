@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
+if (!isset($_SESSION['user']) || !in_array($_SESSION['user']['role'], ['admin', 'superadmin'])) {
     header("Location: ../index.php");
     exit();
 }

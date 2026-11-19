@@ -10,6 +10,7 @@ $dashboard_groups = [
 ];
 
 switch ($current_role) {
+    case 'superadmin':
     case 'admin':
         $dashboard_groups['Pengelolaan PKL'] = [
             [$base_path . 'admin/users.php', 'Pengguna', 'fa-users'],
@@ -49,7 +50,7 @@ $dashboard_groups['Akun'] = [
     [$base_path . 'profile.php', 'Profil', 'fa-user-circle'],
 ];
 
-if ($current_role === 'admin') {
+if ($current_role === 'admin' || $current_role === 'superadmin') {
     $dashboard_groups['Pengaturan'] = [
         [$base_path . 'admin/edit_logo.php', 'Edit Logo & Favicon', 'fa-palette'],
     ];

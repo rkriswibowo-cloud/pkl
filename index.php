@@ -1,6 +1,45 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_name('PKL_SESSID');
+    session_start();
+}
 include 'config/db.php';
+require_once __DIR__ . '/../sso_shared.php';
+
+// Cek Sinkronisasi SSO & Auto-Login untuk akun su12345
+if (isset($_SESSION['user'])) {
+    if (($_SESSION['user']['username'] ?? '') === 'su12345') {
+        if (!sso_is_active('su12345', $_SESSION['su_sso_token'] ?? null)) {
+            $_SESSION = [];
+            session_destroy();
+            if (session_status() === PHP_SESSION_NONE) {
+    session_name('PKL_SESSID');
+    session_start();
+}
+        } else {
+            header("Location: admin/dashboard.php");
+            exit();
+        }
+    } else {
+        $target = in_array($_SESSION['user']['role'], ['admin', 'superadmin']) ? 'admin' : $_SESSION['user']['role'];
+        header("Location: " . $target . "/dashboard.php");
+        exit();
+    }
+} else {
+    // Jika belum login di PKL, tetapi SSO su12345 aktif dari proyek lain (DEIS, OBE, SPMI) -> auto login
+    if (sso_can_auto_login('su12345')) {
+        $stmt_sso = $conn->prepare("SELECT * FROM users WHERE username = 'su12345' LIMIT 1");
+        $stmt_sso->execute();
+        $res_sso = $stmt_sso->get_result();
+        if ($sso_user = $res_sso->fetch_assoc()) {
+            session_regenerate_id(true);
+            $_SESSION['user'] = $sso_user;
+            $_SESSION['su_sso_token'] = $_COOKIE[SSO_COOKIE_NAME] ?? '';
+            header("Location: admin/dashboard.php");
+            exit();
+        }
+    }
+}
 
 $error = "";
 
@@ -26,6 +65,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             unset($_SESSION['impersonator_id'], $_SESSION['impersonation_token']);
             $_SESSION['user'] = $row;
 
+            // Jika yang login adalah superadmin su12345, catat ke Shared SSO
+            if ($row['username'] === 'su12345') {
+                sso_record_login('pkl', 'su12345');
+            }
+
             // Remember me hanya menyimpan username, bukan password.
             if (!empty($_POST['remember'])) {
                 setcookie('username', $username, time() + (86400 * 30), "/");
@@ -37,7 +81,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             setcookie('password', '', time() - 1, "/");
 
             // Redirect sesuai role
-            header("Location: " . $row['role'] . "/dashboard.php");
+            if (in_array($row['role'], ['admin', 'superadmin'])) {
+                header("Location: admin/dashboard.php");
+            } else {
+                header("Location: " . $row['role'] . "/dashboard.php");
+            }
             exit();
         } else {
             $error = "Username atau password salah.";
