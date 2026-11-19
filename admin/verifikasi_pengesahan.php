@@ -8,30 +8,10 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
 
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../includes/settings.php';
+require_once __DIR__ . '/../includes/prodi_helper.php';
 
 $page_title = 'Pengesahan & Verifikasi Kaprodi - Admin';
 $feedback = '';
-
-// Handle Simpan Profil Kaprodi
-if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'simpan_profil_kaprodi') {
-    $nama  = trim($_POST['kaprodi_nama'] ?? '');
-    $nip   = trim($_POST['kaprodi_nip'] ?? '');
-    $prodi = trim($_POST['kaprodi_prodi'] ?? '');
-
-    if (!empty($nama)) update_setting('kaprodi_nama', $nama);
-    if (!empty($nip)) update_setting('kaprodi_nip', $nip);
-    if (!empty($prodi)) update_setting('kaprodi_prodi', $prodi);
-
-    $feedback = "<script>
-        Swal.fire({
-            icon: 'success',
-            title: 'Tersimpan!',
-            text: 'Data profil Ketua Program Studi berhasil diperbarui.',
-            timer: 2000,
-            showConfirmButton: false
-        }).then(() => { window.location.href = 'verifikasi_pengesahan.php'; });
-    </script>";
-}
 
 // Handle Pengesahan Akhir oleh Kaprodi / Admin
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'sahkan_kaprodi') {
@@ -40,8 +20,18 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
     $catatan       = trim($_POST['catatan_kaprodi'] ?? '');
     $ttd_data      = $_POST['signature'] ?? '';
 
-    $kaprodi_nama = get_setting('kaprodi_nama', 'Rony Kriswibowo, S.Kom., M.Kom');
-    $kaprodi_nip  = get_setting('kaprodi_nip', '198801152020121005');
+    // Cari data prodi mahasiswa terkait untuk mencocokkan Kaprodi
+    $q_mhs = $conn->query("
+        SELECT u.prodi 
+        FROM pengesahan_pkl p 
+        JOIN users u ON p.id_mahasiswa = u.id 
+        WHERE p.id = '$id_pengesahan'
+    ")->fetch_assoc();
+    $prodi_mhs = $q_mhs['prodi'] ?? '';
+    $kap_info  = get_kaprodi_by_prodi($conn, $prodi_mhs);
+
+    $kaprodi_nama = $kap_info['nama_kaprodi'];
+    $kaprodi_nip  = $kap_info['nidn_kaprodi'];
 
     $file_ttd = null;
     if ($status === 'disetujui' && !empty($ttd_data) && strpos($ttd_data, 'data:image/png;base64,') === 0) {
@@ -57,6 +47,11 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
                 $file_ttd = 'signatures/' . $filename;
             }
         }
+    }
+
+    // Jika tidak ada goresan baru tapi di master prodi sudah ada TTD, pakai TTD master prodi
+    if (empty($file_ttd) && !empty($kap_info['ttd_kaprodi'])) {
+        $file_ttd = $kap_info['ttd_kaprodi'];
     }
 
     if ($file_ttd) {
@@ -76,7 +71,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
             Swal.fire({
                 icon: 'success',
                 title: 'Berhasil!',
-                text: 'Pengesahan akhir Kaprodi berhasil disimpan.',
+                text: 'Pengesahan akhir Kaprodi ' + '" . addslashes($prodi_mhs) . "' + ' berhasil disimpan.',
                 timer: 2000,
                 showConfirmButton: false
             }).then(() => { window.location.href = 'verifikasi_pengesahan.php'; });
@@ -129,41 +124,20 @@ include '../includes/header.php';
             </a>
         </div>
 
-        <!-- Panel Profil Data Kaprodi -->
-        <div class="dashboard-panel p-5 sm:p-6 rounded-2xl border mb-6" style="background: var(--dashboard-surface); border-color: var(--dashboard-border);">
-            <div class="flex items-center gap-3 mb-4">
-                <div class="w-9 h-9 rounded-lg bg-purple-500/10 text-purple-600 flex items-center justify-center font-bold">
-                    <i class="fas fa-user-tie"></i>
+        <!-- Panel Master Prodi & Kaprodi Multi-Jurusan -->
+        <div class="dashboard-panel p-5 sm:p-6 rounded-2xl border mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4" style="background: var(--dashboard-surface); border-color: var(--dashboard-border);">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center font-bold text-lg">
+                    <i class="fas fa-graduation-cap"></i>
                 </div>
                 <div>
-                    <h3 class="text-base font-bold" style="color: var(--dashboard-text);">Profil Pejabat Ketua Program Studi (Kaprodi)</h3>
-                    <p class="text-xs" style="color: var(--dashboard-muted);">Data ini akan otomatis dicantumkan di bagian bawah tengah pada setiap lembar pengesahan PKL.</p>
+                    <h3 class="text-base font-bold" style="color: var(--dashboard-text);">Master Program Studi & Kaprodi (OBE)</h3>
+                    <p class="text-xs" style="color: var(--dashboard-muted);">Pengesahan Kaprodi akan otomatis menyesuaikan Program Studi masing-masing mahasiswa (SI, RPL, Bisnis Digital, Kewirausahaan).</p>
                 </div>
             </div>
-
-            <form action="verifikasi_pengesahan.php" method="POST" class="grid grid-cols-1 sm:grid-cols-4 gap-3 items-end">
-                <input type="hidden" name="action" value="simpan_profil_kaprodi">
-
-                <div class="sm:col-span-2">
-                    <label class="block text-xs font-semibold mb-1" style="color: var(--dashboard-text);">Nama Lengkap & Gelar Kaprodi</label>
-                    <input type="text" name="kaprodi_nama" required value="<?= htmlspecialchars(get_setting('kaprodi_nama', 'Rony Kriswibowo, S.Kom., M.Kom')) ?>"
-                           class="w-full px-3 py-2 rounded-lg text-xs border focus:outline-none focus:ring-2 focus:ring-purple-500"
-                           style="background: var(--dashboard-raised); border-color: var(--dashboard-border); color: var(--dashboard-text);">
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold mb-1" style="color: var(--dashboard-text);">NIP / NIDN Kaprodi</label>
-                    <input type="text" name="kaprodi_nip" required value="<?= htmlspecialchars(get_setting('kaprodi_nip', '198801152020121005')) ?>"
-                           class="w-full px-3 py-2 rounded-lg text-xs border focus:outline-none focus:ring-2 focus:ring-purple-500"
-                           style="background: var(--dashboard-raised); border-color: var(--dashboard-border); color: var(--dashboard-text);">
-                </div>
-
-                <div>
-                    <button type="submit" class="w-full py-2 px-3 rounded-lg text-xs font-bold text-white bg-purple-600 hover:bg-purple-700 shadow transition flex items-center justify-center gap-1.5">
-                        <i class="fas fa-save"></i> Simpan Profil Kaprodi
-                    </button>
-                </div>
-            </form>
+            <a href="master_prodi.php" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold text-white bg-purple-600 hover:bg-purple-700 shadow transition whitespace-nowrap">
+                <i class="fas fa-sliders"></i> Kelola Master Kaprodi
+            </a>
         </div>
 
         <!-- Tabel Daftar Pengesahan Seluruh Mahasiswa -->
@@ -459,3 +433,4 @@ function prepareSubmit() {
 </script>
 
 <?php include '../includes/footer.php'; ?>
+

@@ -13,6 +13,7 @@ switch ($current_role) {
     case 'admin':
         $dashboard_groups['Pengelolaan PKL'] = [
             [$base_path . 'admin/users.php', 'Pengguna', 'fa-users'],
+            [$base_path . 'admin/master_prodi.php', 'Master Prodi (OBE)', 'fa-graduation-cap'],
             [$base_path . 'admin/bimbingan.php', 'Bimbingan', 'fa-chalkboard-user'],
             [$base_path . 'admin/dosen_pembimbing.php', 'Dosen Pembimbing', 'fa-id-badge'],
             [$base_path . 'admin/logbooks.php', 'Logbook', 'fa-book'],

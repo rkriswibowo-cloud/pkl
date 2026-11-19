@@ -8,10 +8,17 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'mahasiswa') {
 
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../includes/settings.php';
+require_once __DIR__ . '/../includes/prodi_helper.php';
 
 $page_title = 'Lembar Pengesahan PKL - Mahasiswa';
 $id_mahasiswa = (int)$_SESSION['user']['id'];
 $feedback = '';
+
+// Ambil info prodi mahasiswa
+$user_row = $conn->query("SELECT u.prodi, m.nim FROM users u LEFT JOIN mahasiswa m ON u.id = m.id WHERE u.id = '$id_mahasiswa'")->fetch_assoc();
+$current_prodi = $user_row['prodi'] ?? '';
+$kaprodi_info = get_kaprodi_by_prodi($conn, $current_prodi);
+$list_prodi = get_all_prodi($conn, true);
 
 // Ambil info bimbingan dosen
 $bimbingan = $conn->query("
@@ -29,8 +36,17 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
     $judul      = trim($_POST['judul_laporan'] ?? '');
     $instansi   = trim($_POST['nama_instansi'] ?? '');
     $alamat     = trim($_POST['alamat_instansi'] ?? '');
+    $prodi_post = trim($_POST['prodi'] ?? '');
     $tgl_mulai  = !empty($_POST['tgl_mulai']) ? $_POST['tgl_mulai'] : null;
     $tgl_selesai= !empty($_POST['tgl_selesai']) ? $_POST['tgl_selesai'] : null;
+
+    if (!empty($prodi_post)) {
+        $conn->query("UPDATE users SET prodi = '" . $conn->real_escape_string($prodi_post) . "' WHERE id = '$id_mahasiswa'");
+        $conn->query("INSERT INTO mahasiswa (id, prodi) VALUES ('$id_mahasiswa', '" . $conn->real_escape_string($prodi_post) . "') ON DUPLICATE KEY UPDATE prodi = VALUES(prodi)");
+        $_SESSION['user']['prodi'] = $prodi_post;
+        $current_prodi = $prodi_post;
+        $kaprodi_info = get_kaprodi_by_prodi($conn, $current_prodi);
+    }
 
     if (empty($judul) || empty($instansi)) {
         $feedback = "<script>Swal.fire({icon:'warning', title:'Mohon Lengkapi', text:'Judul laporan dan nama instansi PKL wajib diisi.'});</script>";
@@ -225,17 +241,25 @@ include '../includes/header.php';
                             </span>
                         <?php endif; ?>
                     </div>
-                    <h4 class="text-sm font-bold" style="color: var(--dashboard-text);">Ketua Program Studi</h4>
+                    <h4 class="text-sm font-bold" style="color: var(--dashboard-text);">
+                        Kaprodi <?= htmlspecialchars($kaprodi_info['prodi_nama']) ?>
+                    </h4>
                     <p class="text-xs mt-1" style="color: var(--dashboard-muted);">
-                        <?= htmlspecialchars(($pengesahan['nama_kaprodi'] ?? '') ?: get_setting('kaprodi_nama', 'Ketua Program Studi')) ?>
+                        <?= htmlspecialchars(($pengesahan['nama_kaprodi'] ?? '') ?: $kaprodi_info['nama_kaprodi']) ?>
                     </p>
+                    <div class="text-[11px]" style="color: var(--dashboard-muted);">
+                        NIDN: <?= htmlspecialchars(($pengesahan['nip_kaprodi'] ?? '') ?: $kaprodi_info['nidn_kaprodi']) ?>
+                    </div>
                 </div>
                 <div class="pt-4 mt-3 border-t text-xs" style="border-color: var(--dashboard-border);">
-                    <?php if (!empty($pengesahan['ttd_kaprodi'])): ?>
+                    <?php 
+                    $kaprodi_ttd_show = !empty($pengesahan['ttd_kaprodi']) ? $pengesahan['ttd_kaprodi'] : $kaprodi_info['ttd_kaprodi'];
+                    if (!empty($kaprodi_ttd_show)): 
+                    ?>
                         <div class="h-12 flex items-center">
-                            <img src="<?= $base_path . htmlspecialchars($pengesahan['ttd_kaprodi']) ?>" alt="TTD Kaprodi" class="max-h-full max-w-[120px] object-contain">
+                            <img src="<?= $base_path . htmlspecialchars($kaprodi_ttd_show) ?>" alt="TTD Kaprodi" class="max-h-full max-w-[120px] object-contain">
                         </div>
-                        <span class="text-[10px] text-emerald-600 block mt-1 font-semibold">Telah disahkan Kaprodi</span>
+                        <span class="text-[10px] text-emerald-600 block mt-1 font-semibold">Tanda tangan digital Kaprodi siap</span>
                     <?php else: ?>
                         <span class="text-[11px] text-amber-600 font-medium">Mengetahui & pengesahan akhir oleh Kaprodi</span>
                     <?php endif; ?>
@@ -257,6 +281,24 @@ include '../includes/header.php';
 
             <form action="pengesahan.php" method="POST" enctype="multipart/form-data" class="space-y-5">
                 <input type="hidden" name="action" value="ajukan_pengesahan">
+
+                <!-- Pilihan Program Studi (Master OBE) -->
+                <div>
+                    <label class="block text-xs font-semibold mb-1.5" style="color: var(--dashboard-text);">
+                        Program Studi <span class="text-red-500">*</span>
+                    </label>
+                    <select name="prodi" required class="w-full px-4 py-2.5 rounded-lg text-sm border focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold" style="background: var(--dashboard-raised); border-color: var(--dashboard-border); color: var(--dashboard-text);">
+                        <option value="">-- Pilih Program Studi --</option>
+                        <?php foreach ($list_prodi as $pr): ?>
+                            <option value="<?= htmlspecialchars($pr['nama']) ?>" <?= ($current_prodi === $pr['nama'] || $current_prodi === $pr['kode']) ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($pr['jenjang'] . ' ' . $pr['nama'] . ' (' . $pr['kode'] . ') - Kaprodi: ' . $pr['nama_kaprodi']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <span class="text-[11px] block mt-1" style="color: var(--dashboard-muted);">
+                        Ketua Program Studi pada lembar pengesahan akan disesuaikan otomatis dengan prodi yang Anda pilih.
+                    </span>
+                </div>
 
                 <!-- Judul Laporan -->
                 <div>

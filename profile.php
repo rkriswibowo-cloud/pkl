@@ -342,14 +342,22 @@ include 'includes/header.php';
                             <select name="prodi" id="profile-prodi"
                                     required
                                     class="dashboard-field-control">
-                                <option value="">Pilih Prodi</option>
-                                <option value="Teknik Informatika" <?= ($user['prodi'] == 'Teknik Informatika') ? 'selected' : '' ?>>Teknik Informatika</option>
-                                <option value="Sistem Informasi" <?= ($user['prodi'] == 'Sistem Informasi') ? 'selected' : '' ?>>Sistem Informasi</option>
-                                <option value="Teknik Komputer" <?= ($user['prodi'] == 'Teknik Komputer') ? 'selected' : '' ?>>Teknik Komputer</option>
-                                <option value="Manajemen Informatika" <?= ($user['prodi'] == 'Manajemen Informatika') ? 'selected' : '' ?>>Manajemen Informatika</option>
-                                <option value="Akuntansi" <?= ($user['prodi'] == 'Akuntansi') ? 'selected' : '' ?>>Akuntansi</option>
-                                <option value="Manajemen" <?= ($user['prodi'] == 'Manajemen') ? 'selected' : '' ?>>Manajemen</option>
-                                <option value="Hukum" <?= ($user['prodi'] == 'Hukum') ? 'selected' : '' ?>>Hukum</option>
+                                <option value="">Pilih Program Studi</option>
+                                <?php 
+                                $prodis = $conn->query("SELECT * FROM program_studi WHERE status='ACTIVE' ORDER BY nama ASC");
+                                if ($prodis && $prodis->num_rows > 0) {
+                                    while ($pr = $prodis->fetch_assoc()) {
+                                        $sel = ($user['prodi'] === $pr['nama'] || $user['prodi'] === $pr['kode']) ? 'selected' : '';
+                                        echo '<option value="' . htmlspecialchars($pr['nama']) . '" ' . $sel . '>' . htmlspecialchars($pr['jenjang'] . ' ' . $pr['nama'] . ' (' . $pr['kode'] . ')') . '</option>';
+                                    }
+                                } else {
+                                    $fallback_prodis = ['Sistem Informasi', 'Rekayasa Perangkat Lunak', 'Bisnis Digital', 'Kewirausahaan'];
+                                    foreach ($fallback_prodis as $fp) {
+                                        $sel = ($user['prodi'] === $fp) ? 'selected' : '';
+                                        echo '<option value="' . htmlspecialchars($fp) . '" ' . $sel . '>' . htmlspecialchars($fp) . '</option>';
+                                    }
+                                }
+                                ?>
                             </select>
                         </div>
 

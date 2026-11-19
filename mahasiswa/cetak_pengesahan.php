@@ -8,6 +8,7 @@ if (!isset($_SESSION['user'])) {
 
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../includes/settings.php';
+require_once __DIR__ . '/../includes/prodi_helper.php';
 
 // Tentukan ID Mahasiswa yang dicetak (bisa dari session mahasiswa, atau admin/dosen via $_GET['id_mahasiswa'])
 $id_mahasiswa = 0;
@@ -57,10 +58,11 @@ if (!$data || empty($data['judul_laporan'])) {
 
 $app_logo = get_setting('app_logo', 'assets/images/dashboard-logo-uam.png');
 $app_name = get_setting('app_name', 'Universitas Anwar Medika');
-$app_desc = get_setting('app_desc', 'Fakultas Sains dan Teknologi');
-$kaprodi_nama = $data['nama_kaprodi'] ?: get_setting('kaprodi_nama', 'Rony Kriswibowo, S.Kom., M.Kom');
-$kaprodi_nip  = $data['nip_kaprodi'] ?: get_setting('kaprodi_nip', '198801152020121005');
-$kaprodi_prodi= get_setting('kaprodi_prodi', $data['prodi']);
+$kaprodi_info = get_kaprodi_by_prodi($conn, $data['prodi']);
+$app_desc = $kaprodi_info['fakultas'] ?: get_setting('app_desc', 'Fakultas Sains dan Teknologi');
+$kaprodi_nama = $data['nama_kaprodi'] ?: $kaprodi_info['nama_kaprodi'];
+$kaprodi_nip  = $data['nip_kaprodi'] ?: $kaprodi_info['nidn_kaprodi'];
+$kaprodi_ttd  = $data['ttd_kaprodi'] ?: $kaprodi_info['ttd_kaprodi'];
 
 // Helper format tanggal Indonesia
 function tgl_indo($tgl) {
@@ -415,15 +417,15 @@ function tgl_indo($tgl) {
                     <div>Mengetahui,</div>
                     <div style="font-weight: bold;">Ketua Program Studi <?= htmlspecialchars($data['prodi']) ?></div>
                     <div class="ttd-image-area">
-                        <?php if (!empty($data['ttd_kaprodi'])): ?>
-                            <img src="../<?= htmlspecialchars($data['ttd_kaprodi']) ?>" alt="TTD Kaprodi">
+                        <?php if (!empty($kaprodi_ttd)): ?>
+                            <img src="../<?= htmlspecialchars($kaprodi_ttd) ?>" alt="TTD Kaprodi">
                         <?php endif; ?>
                     </div>
                     <div class="ttd-nama">
                         <?= htmlspecialchars($kaprodi_nama) ?>
                     </div>
                     <div class="ttd-nip">
-                        NIP: <?= htmlspecialchars($kaprodi_nip) ?>
+                        NIDN / NIP: <?= htmlspecialchars($kaprodi_nip ?: '-') ?>
                     </div>
                 </div>
             </div>
@@ -434,3 +436,4 @@ function tgl_indo($tgl) {
 
 </body>
 </html>
+
