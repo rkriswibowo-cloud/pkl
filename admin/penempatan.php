@@ -275,92 +275,162 @@ include '../includes/header.php';
 
 <!-- ===== MODAL PENEMPATAN ===== -->
 <div id="modal-penempatan" class="fixed inset-0 z-50 hidden items-center justify-center p-4"
-     style="background:rgba(0,0,0,0.5);" onclick="if(event.target===this)hideModal('modal-penempatan')">
-    <div class="dashboard-card w-full max-w-xl max-h-[90vh] overflow-y-auto p-6">
-        <div class="flex items-center justify-between mb-4">
-            <h3 class="font-bold text-lg flex items-center gap-2" id="modal-penempatan-title">
-                <i class="fas fa-map-pin text-green-500"></i>
-                <span>Penempatan PKL</span>
-            </h3>
-            <button onclick="hideModal('modal-penempatan')" class="text-gray-400 hover:text-gray-600">
-                <i class="fas fa-xmark text-xl"></i>
+     style="background:rgba(0,0,0,0.55);" onclick="if(event.target===this)hideModal('modal-penempatan')">
+    <div class="dashboard-card w-full max-w-2xl max-h-[92vh] flex flex-col rounded-2xl shadow-2xl overflow-hidden">
+
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between px-6 py-4 border-b shrink-0"
+             style="border-color:var(--dashboard-border); background:var(--dashboard-bg-soft);">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-green-100 text-green-600 flex items-center justify-center">
+                    <i class="fas fa-map-pin"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-base leading-tight" id="modal-penempatan-title">Penempatan PKL</h3>
+                    <p class="text-xs mt-0.5" style="color:var(--dashboard-muted);">Isi informasi tempat dan periode PKL mahasiswa</p>
+                </div>
+            </div>
+            <button onclick="hideModal('modal-penempatan')"
+                    class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-gray-200 transition text-gray-400 hover:text-gray-700">
+                <i class="fas fa-xmark"></i>
             </button>
         </div>
 
-        <!-- Info Mahasiswa -->
-        <div id="modal-mhs-info" class="mb-4 p-3 rounded-lg bg-blue-50 border border-blue-200 text-sm text-blue-800"></div>
+        <!-- Scrollable Body -->
+        <div class="overflow-y-auto flex-1 px-6 py-5">
 
-        <form method="POST" id="form-penempatan">
-            <input type="hidden" name="action" value="simpan">
-            <input type="hidden" name="id_mahasiswa" id="pmp_id_mahasiswa">
+            <!-- Info Mahasiswa Banner -->
+            <div id="modal-mhs-info"
+                 class="mb-5 p-3 rounded-xl bg-blue-50 border border-blue-200 text-sm text-blue-800 flex items-center gap-2">
+            </div>
 
-            <div class="flex flex-col gap-4">
-                <div>
-                    <label class="block text-sm font-medium mb-1">Mitra / Tempat PKL <span class="text-red-500">*</span></label>
-                    <select name="id_mitra" id="pmp_id_mitra" required class="form-select w-full">
-                        <option value="">— Pilih Mitra PKL —</option>
-                        <?php foreach ($mitra_options as $mtr): ?>
-                            <option value="<?=$mtr['id']?>">
-                                <?=htmlspecialchars($mtr['nama_perusahaan'])?><?=$mtr['kota'] ? " — {$mtr['kota']}" : ''?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                    <p class="text-xs mt-1" style="color:var(--dashboard-muted);">
-                        Hanya mitra berstatus <strong>Aktif</strong> yang ditampilkan.
-                        <a href="mitra.php" class="text-blue-500 hover:underline">Kelola Mitra</a>
+            <form method="POST" id="form-penempatan">
+                <input type="hidden" name="action" value="simpan">
+                <input type="hidden" name="id_mahasiswa" id="pmp_id_mahasiswa">
+
+                <!-- SEKSI 1: Mitra -->
+                <div class="mb-5">
+                    <p class="text-xs font-semibold uppercase tracking-widest mb-3 flex items-center gap-2"
+                       style="color:var(--dashboard-muted);">
+                        <i class="fas fa-building"></i> Tempat PKL
                     </p>
+                    <div>
+                        <label class="block text-sm font-medium mb-1.5">
+                            Instansi / Perusahaan Mitra <span class="text-red-500">*</span>
+                        </label>
+                        <select name="id_mitra" id="pmp_id_mitra" required class="form-select w-full">
+                            <option value="">— Pilih Mitra PKL —</option>
+                            <?php foreach ($mitra_options as $mtr): ?>
+                                <option value="<?=$mtr['id']?>">
+                                    <?=htmlspecialchars($mtr['nama_perusahaan'])?><?=$mtr['kota'] ? " — {$mtr['kota']}" : ''?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <p class="text-xs mt-1.5 flex items-center gap-1" style="color:var(--dashboard-muted);">
+                            <i class="fas fa-circle-info"></i>
+                            Hanya mitra berstatus <strong class="mx-0.5">Aktif</strong> yang tampil.
+                            <a href="mitra.php" class="text-blue-500 hover:underline ml-1">Kelola Mitra →</a>
+                        </p>
+                    </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Tanggal Mulai</label>
-                        <input type="date" name="tanggal_mulai" id="pmp_tgl_mulai" class="form-input w-full">
+                <!-- SEKSI 2: Periode -->
+                <div class="mb-5 pt-4 border-t" style="border-color:var(--dashboard-border);">
+                    <p class="text-xs font-semibold uppercase tracking-widest mb-3 flex items-center gap-2"
+                       style="color:var(--dashboard-muted);">
+                        <i class="fas fa-calendar-alt"></i> Periode PKL
+                    </p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1.5">Tanggal Mulai</label>
+                            <input type="date" name="tanggal_mulai" id="pmp_tgl_mulai"
+                                   class="form-input w-full" onchange="hitungDurasi()">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1.5">Tanggal Selesai</label>
+                            <input type="date" name="tanggal_selesai" id="pmp_tgl_sel"
+                                   class="form-input w-full" onchange="hitungDurasi()">
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Tanggal Selesai</label>
-                        <input type="date" name="tanggal_selesai" id="pmp_tgl_sel" class="form-input w-full">
+                    <div id="durasi_info" class="hidden mt-2 text-xs text-center py-1.5 px-3 rounded-lg bg-green-50 border border-green-200 text-green-700 font-medium"></div>
+                </div>
+
+                <!-- SEKSI 3: Pembimbing Lapangan -->
+                <div class="mb-1 pt-4 border-t" style="border-color:var(--dashboard-border);">
+                    <p class="text-xs font-semibold uppercase tracking-widest mb-3 flex items-center gap-2"
+                       style="color:var(--dashboard-muted);">
+                        <i class="fas fa-user-tie"></i> Pembimbing Lapangan
+                    </p>
+                    <div class="flex flex-col gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1.5">Nama Pembimbing</label>
+                            <input type="text" name="nama_pembimbing_lapangan" id="pmp_nama_pbl"
+                                   maxlength="100" class="form-input w-full"
+                                   placeholder="Nama PIC / supervisor / mentor di perusahaan">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-1.5">Jabatan</label>
+                                <input type="text" name="jabatan_pembimbing" id="pmp_jab_pbl"
+                                       maxlength="100" class="form-input w-full"
+                                       placeholder="Supervisor, HR Manager...">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1.5">No. Telepon / WhatsApp</label>
+                                <input type="text" name="no_telp_pembimbing" id="pmp_telp_pbl"
+                                       maxlength="20" class="form-input w-full"
+                                       placeholder="08xx-xxxx-xxxx">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1.5">Keterangan Tambahan</label>
+                            <textarea name="keterangan" id="pmp_ket" rows="2"
+                                      class="form-input w-full text-sm resize-none"
+                                      placeholder="Catatan khusus mengenai penempatan ini..."></textarea>
+                        </div>
                     </div>
                 </div>
 
-                <div>
-                    <label class="block text-sm font-medium mb-1">Nama Pembimbing Lapangan</label>
-                    <input type="text" name="nama_pembimbing_lapangan" id="pmp_nama_pbl"
-                           maxlength="100" class="form-input w-full"
-                           placeholder="Nama PIC / mentor di perusahaan">
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Jabatan Pembimbing</label>
-                        <input type="text" name="jabatan_pembimbing" id="pmp_jab_pbl"
-                               maxlength="100" class="form-input w-full" placeholder="Supervisor, Manager...">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-1">No. Telepon Pembimbing</label>
-                        <input type="text" name="no_telp_pembimbing" id="pmp_telp_pbl"
-                               maxlength="20" class="form-input w-full" placeholder="08xx-xxxx-xxxx">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">Keterangan</label>
-                    <textarea name="keterangan" id="pmp_ket" rows="2"
-                              class="form-input w-full text-sm" placeholder="Catatan tambahan..."></textarea>
-                </div>
-            </div>
+            </form>
+        </div><!-- end scroll body -->
 
-            <div class="flex gap-3 mt-5 pt-4 border-t" style="border-color:var(--dashboard-border);">
-                <button type="submit" class="btn-primary flex items-center gap-2 px-5 py-2.5">
-                    <i class="fas fa-save"></i> Simpan
-                </button>
-                <button type="button" onclick="hideModal('modal-penempatan')"
-                        class="px-5 py-2.5 rounded-lg border hover:bg-gray-100 transition">Batal</button>
-            </div>
-        </form>
+        <!-- Modal Footer -->
+        <div class="flex items-center justify-between gap-3 px-6 py-4 border-t shrink-0"
+             style="border-color:var(--dashboard-border); background:var(--dashboard-bg-soft);">
+            <button type="button" onclick="hideModal('modal-penempatan')"
+                    class="px-5 py-2.5 rounded-xl border text-sm font-medium hover:bg-gray-100 transition">
+                <i class="fas fa-xmark mr-1.5"></i>Batal
+            </button>
+            <button type="submit" form="form-penempatan"
+                    class="btn-primary flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold">
+                <i class="fas fa-save"></i> Simpan Penempatan
+            </button>
+        </div>
     </div>
 </div>
 
 <script>
 function showModal(id) { document.getElementById(id).classList.remove('hidden'); document.getElementById(id).classList.add('flex'); }
 function hideModal(id) { document.getElementById(id).classList.add('hidden'); document.getElementById(id).classList.remove('flex'); }
+
+function hitungDurasi() {
+    const mulai = document.getElementById('pmp_tgl_mulai').value;
+    const sel   = document.getElementById('pmp_tgl_sel').value;
+    const box   = document.getElementById('durasi_info');
+    if (mulai && sel && sel >= mulai) {
+        const diff = Math.round((new Date(sel) - new Date(mulai)) / 86400000);
+        box.textContent = `Durasi PKL: ${diff} hari`;
+        box.classList.remove('hidden');
+        box.className = box.className.replace('bg-red-50 border-red-200 text-red-700', '');
+        box.classList.add('bg-green-50', 'border-green-200', 'text-green-700');
+    } else if (mulai && sel && sel < mulai) {
+        box.textContent = 'Tanggal selesai tidak boleh sebelum tanggal mulai.';
+        box.classList.remove('hidden', 'bg-green-50', 'border-green-200', 'text-green-700');
+        box.classList.add('bg-red-50', 'border-red-200', 'text-red-700');
+    } else {
+        box.classList.add('hidden');
+    }
+}
 
 function openPenempatanModal(d) {
     document.getElementById('pmp_id_mahasiswa').value = d.id;
@@ -371,12 +441,23 @@ function openPenempatanModal(d) {
     document.getElementById('pmp_jab_pbl').value      = d.jabatan_pembimbing ?? '';
     document.getElementById('pmp_telp_pbl').value     = d.no_telp_pembimbing ?? '';
     document.getElementById('pmp_ket').value           = d.keterangan ?? '';
+
+    // Update banner info mahasiswa
     document.getElementById('modal-mhs-info').innerHTML =
-        `<i class="fas fa-user-graduate mr-2"></i><strong>${d.nama}</strong> &bull; NIM: ${d.nim ?? d.username} &bull; ${d.prodi_display}`;
-    document.querySelector('#modal-penempatan-title span').textContent =
-        d.id_penempatan ? 'Edit Penempatan PKL' : 'Tambah Penempatan PKL';
+        `<i class="fas fa-user-graduate text-blue-500 shrink-0"></i>
+         <div><strong>${d.nama}</strong>
+         <span class="ml-2 text-xs opacity-75">NIM: ${d.nim ?? d.username} &bull; ${d.prodi_display}</span></div>`;
+
+    // Update judul modal
+    const isEdit = !!d.id_penempatan;
+    document.getElementById('modal-penempatan-title').innerHTML = isEdit
+        ? `<i class="fas fa-pen text-blue-500"></i> Edit Penempatan PKL`
+        : `<i class="fas fa-map-pin text-green-500"></i> Tambah Penempatan PKL`;
+
+    hitungDurasi();
     showModal('modal-penempatan');
 }
 </script>
 
 <?php include '../includes/footer.php'; ?>
+
