@@ -105,7 +105,7 @@ $remember_checked = !empty($remembered_username);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign In - Sistem Logbook PKL</title>
+    <title>Masuk - PKL</title>
 
     <!-- Favicon -->
     <?php

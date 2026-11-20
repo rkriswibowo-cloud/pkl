@@ -18,6 +18,7 @@ switch ($current_role) {
             [$base_path . 'admin/bimbingan.php', 'Bimbingan', 'fa-chalkboard-user'],
             [$base_path . 'admin/dosen_pembimbing.php', 'Dosen Pembimbing', 'fa-id-badge'],
             [$base_path . 'admin/logbooks.php', 'Logbook', 'fa-book'],
+            [$base_path . 'admin/dokumen.php', 'Arsip Dokumen PKL', 'fa-folder-open'],
             [$base_path . 'admin/penilaian.php', 'Rekap Nilai PKL', 'fa-award'],
             [$base_path . 'admin/verifikasi_pengesahan.php', 'Pengesahan (Kaprodi)', 'fa-stamp'],
         ];
@@ -26,6 +27,9 @@ switch ($current_role) {
         $dashboard_groups['Kegiatan PKL'] = [
             [$base_path . 'mahasiswa/input_logbook.php', 'Input Logbook', 'fa-plus-circle'],
             [$base_path . 'mahasiswa/riwayat.php', 'Riwayat Logbook', 'fa-clock-rotate-left'],
+        ];
+        $dashboard_groups['Laporan & Nilai'] = [
+            [$base_path . 'mahasiswa/dokumen.php', 'Unggah Dokumen PKL', 'fa-folder-arrow-up'],
             [$base_path . 'mahasiswa/nilai.php', 'Transkrip Nilai PKL', 'fa-award'],
             [$base_path . 'mahasiswa/pengesahan.php', 'Lembar Pengesahan', 'fa-file-signature'],
         ];
@@ -33,6 +37,7 @@ switch ($current_role) {
     case 'dosen_pkl':
         $dashboard_groups['Bimbingan PKL'] = [
             [($current_page === 'dashboard.php' ? '' : $dashboard_url) . '#persetujuan-logbook', 'Persetujuan Logbook', 'fa-circle-check'],
+            [$base_path . 'dosen_pkl/dokumen.php', 'Review Dokumen / Laporan', 'fa-folder-open'],
             [$base_path . 'dosen_pkl/penilaian.php', 'Penilaian Bimbingan', 'fa-award'],
             [$base_path . 'dosen_pkl/verifikasi_berkas.php', 'Verifikasi Pengesahan', 'fa-file-circle-check'],
         ];
@@ -84,14 +89,19 @@ if ($current_role === 'admin' || $current_role === 'superadmin') {
                 <?php else: ?>
                     <?php
                     $group_slug = match ($label) {
-                        'Akun' => 'account',
-                        'Pengaturan' => 'settings',
-                        default => 'pkl',
+                        'Akun'          => 'account',
+                        'Pengaturan'    => 'settings',
+                        'Laporan & Nilai' => 'laporan-nilai',
+                        'Kegiatan PKL'  => 'kegiatan-pkl',
+                        'Bimbingan PKL' => 'bimbingan-pkl',
+                        'Pengelolaan PKL' => 'pengelolaan-pkl',
+                        default         => 'pkl-' . md5($label),
                     };
                     $group_icon = match ($label) {
-                        'Akun' => 'fa-user',
-                        'Pengaturan' => 'fa-sliders',
-                        default => 'fa-layer-group',
+                        'Akun'          => 'fa-user',
+                        'Pengaturan'    => 'fa-sliders',
+                        'Laporan & Nilai' => 'fa-file-lines',
+                        default         => 'fa-layer-group',
                     };
                     ?>
                     <button type="button" class="dashboard-group-heading" aria-expanded="true"
@@ -102,7 +112,7 @@ if ($current_role === 'admin' || $current_role === 'superadmin') {
                         <i class="fas fa-chevron-down dashboard-group-chevron" aria-hidden="true"></i>
                     </button>
                 <?php endif; ?>
-                <div class="dashboard-group-links" id="dashboard-group-<?= $label === 'Utama' ? 'main' : (match ($label) { 'Akun' => 'account', 'Pengaturan' => 'settings', default => 'pkl' }) ?>">
+                <div class="dashboard-group-links" id="dashboard-group-<?= $label === 'Utama' ? 'main' : $group_slug ?>">
                     <?php foreach ($links as [$href, $label_link, $icon]): ?>
                         <?php $menu_page = basename($href); ?>
                         <a href="<?= htmlspecialchars($href) ?>" title="<?= htmlspecialchars($label_link) ?>"
