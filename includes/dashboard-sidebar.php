@@ -15,7 +15,9 @@ switch ($current_role) {
         $dashboard_groups['Pengelolaan PKL'] = [
             [$base_path . 'admin/users.php', 'Pengguna', 'fa-users'],
             [$base_path . 'admin/master_prodi.php', 'Master Prodi (OBE)', 'fa-graduation-cap'],
-            [$base_path . 'admin/bimbingan.php', 'Bimbingan', 'fa-chalkboard-user'],
+            [$base_path . 'admin/mitra.php', 'Master Mitra PKL', 'fa-building'],
+            [$base_path . 'admin/penempatan.php', 'Penempatan PKL', 'fa-map-pin'],
+            [$base_path . 'admin/bimbingan.php', 'Bimbingan & Dosen', 'fa-chalkboard-user'],
             [$base_path . 'admin/dosen_pembimbing.php', 'Dosen Pembimbing', 'fa-id-badge'],
             [$base_path . 'admin/logbooks.php', 'Logbook', 'fa-book'],
             [$base_path . 'admin/dokumen.php', 'Arsip Dokumen PKL', 'fa-folder-open'],
@@ -25,6 +27,7 @@ switch ($current_role) {
         break;
     case 'mahasiswa':
         $dashboard_groups['Kegiatan PKL'] = [
+            [$base_path . 'mahasiswa/tempat_pkl.php', 'Tempat PKL Saya', 'fa-map-pin'],
             [$base_path . 'mahasiswa/input_logbook.php', 'Input Logbook', 'fa-plus-circle'],
             [$base_path . 'mahasiswa/riwayat.php', 'Riwayat Logbook', 'fa-clock-rotate-left'],
         ];
