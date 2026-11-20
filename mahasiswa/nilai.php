@@ -80,9 +80,9 @@ include '../includes/header.php';
                 </p>
             </div>
             <div class="flex items-center gap-2">
-                <button type="button" onclick="window.print()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold border transition" style="background: var(--dashboard-surface); border-color: var(--dashboard-border); color: var(--dashboard-text);">
-                    <i class="fas fa-print"></i> Cetak Transkrip
-                </button>
+                <a href="../admin/cetak_nilai_pdf.php" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white transition shadow-sm">
+                    <i class="fas fa-print"></i> Cetak Lembar Nilai Resmi (PDF)
+                </a>
                 <a href="dashboard.php" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold border transition" style="background: var(--dashboard-surface); border-color: var(--dashboard-border); color: var(--dashboard-text);">
                     <i class="fas fa-arrow-left"></i> Dashboard
                 </a>

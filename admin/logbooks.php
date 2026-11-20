@@ -73,18 +73,33 @@ $query = "
     LIMIT $start, $limit
 ";
 $result = $conn->query($query);
+
+// Ambil daftar prodi untuk modal ekspor
+$prodi_export_options = $conn->query("
+    SELECT DISTINCT COALESCE(NULLIF(m.prodi, ''), NULLIF(u.prodi, '')) AS prodi_name 
+    FROM users u 
+    LEFT JOIN mahasiswa m ON u.id = m.id 
+    WHERE u.role = 'mahasiswa' AND (m.prodi IS NOT NULL OR u.prodi IS NOT NULL)
+    ORDER BY prodi_name ASC
+");
+
 $page_title = 'Logbook Mahasiswa - Logbook PKL';
 include '../includes/header.php';
 ?>
 
 
 <div class="dashboard-page">
-    <div class="admin-list-header">
+    <div class="admin-list-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
         <div>
             <a href="dashboard.php" class="admin-list-back">
                 <i class="fas fa-arrow-left" aria-hidden="true"></i> Dashboard
             </a>
             <h2 class="dashboard-title">Logbook Mahasiswa</h2>
+        </div>
+        <div>
+            <button type="button" onclick="bukaModalEksporLogbook()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition shadow-sm" style="cursor: pointer;">
+                <i class="fas fa-file-excel"></i> Ekspor Rekap Logbook
+            </button>
         </div>
     </div>
 
@@ -162,5 +177,96 @@ include '../includes/header.php';
         ?>
     </div>
 </div>
+
+<!-- Modal Ekspor Logbook -->
+<div id="modalEksporLogbook" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden">
+    <div class="w-full max-w-lg rounded-2xl shadow-2xl border overflow-hidden transition-all transform flex flex-col" style="background: var(--dashboard-surface); border-color: var(--dashboard-border);">
+        <div class="p-5 border-b flex items-center justify-between" style="border-color: var(--dashboard-border);">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+                    <i class="fas fa-file-excel text-lg"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-base" style="color: var(--dashboard-text);">Ekspor Rekapitulasi Logbook</h3>
+                    <p class="text-xs" style="color: var(--dashboard-muted);">Pilih kriteria rentang tanggal dan filter data logbook</p>
+                </div>
+            </div>
+            <button type="button" onclick="tutupModalEksporLogbook()" class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition">
+                <i class="fas fa-xmark text-lg"></i>
+            </button>
+        </div>
+
+        <form action="export_logbook_excel.php" method="GET" target="_blank" class="p-5 flex flex-col gap-4">
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-semibold mb-1" style="color: var(--dashboard-text);">Dari Tanggal</label>
+                    <input type="date" name="start_date" class="form-input w-full text-xs py-2 px-3 rounded-lg border" style="background: var(--dashboard-raised); border-color: var(--dashboard-border); color: var(--dashboard-text);">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1" style="color: var(--dashboard-text);">Sampai Tanggal</label>
+                    <input type="date" name="end_date" class="form-input w-full text-xs py-2 px-3 rounded-lg border" style="background: var(--dashboard-raised); border-color: var(--dashboard-border); color: var(--dashboard-text);">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold mb-1" style="color: var(--dashboard-text);">Program Studi</label>
+                <select name="prodi" class="form-select w-full text-xs py-2 px-3 rounded-lg border" style="background: var(--dashboard-raised); border-color: var(--dashboard-border); color: var(--dashboard-text);">
+                    <option value="">-- Semua Program Studi --</option>
+                    <?php if ($prodi_export_options && $prodi_export_options->num_rows > 0): ?>
+                        <?php while ($p = $prodi_export_options->fetch_assoc()): ?>
+                            <option value="<?= htmlspecialchars($p['prodi_name']) ?>"><?= htmlspecialchars($p['prodi_name']) ?></option>
+                        <?php endwhile; ?>
+                    <?php endif; ?>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold mb-1" style="color: var(--dashboard-text);">Status Verifikasi</label>
+                <select name="status" class="form-select w-full text-xs py-2 px-3 rounded-lg border" style="background: var(--dashboard-raised); border-color: var(--dashboard-border); color: var(--dashboard-text);">
+                    <option value="">-- Semua Status --</option>
+                    <option value="disetujui">Lengkap Disetujui (Kampus & Lapangan)</option>
+                    <option value="pending">Menunggu Verifikasi (Pending)</option>
+                    <option value="ditolak">Terdapat Penolakan (Ditolak)</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold mb-1" style="color: var(--dashboard-text);">Format File Unduhan</label>
+                <div class="grid grid-cols-2 gap-3 mt-1">
+                    <label class="flex items-center gap-2 p-2.5 rounded-lg border cursor-pointer hover:bg-emerald-500/5 transition" style="border-color: var(--dashboard-border);">
+                        <input type="radio" name="format" value="excel" checked class="text-emerald-600 focus:ring-emerald-500">
+                        <span class="text-xs font-semibold flex items-center gap-1.5" style="color: var(--dashboard-text);">
+                            <i class="fas fa-file-excel text-emerald-600"></i> Excel (.xls)
+                        </span>
+                    </label>
+                    <label class="flex items-center gap-2 p-2.5 rounded-lg border cursor-pointer hover:bg-blue-500/5 transition" style="border-color: var(--dashboard-border);">
+                        <input type="radio" name="format" value="csv" class="text-blue-600 focus:ring-blue-500">
+                        <span class="text-xs font-semibold flex items-center gap-1.5" style="color: var(--dashboard-text);">
+                            <i class="fas fa-file-csv text-blue-600"></i> CSV Spreadsheet
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="pt-3 border-t flex items-center justify-end gap-2" style="border-color: var(--dashboard-border);">
+                <button type="button" onclick="tutupModalEksporLogbook()" class="px-4 py-2 rounded-lg text-xs font-semibold border transition" style="background: var(--dashboard-surface); border-color: var(--dashboard-border); color: var(--dashboard-text);">
+                    Batal
+                </button>
+                <button type="submit" class="inline-flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition shadow-sm">
+                    <i class="fas fa-download"></i> Unduh File
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function bukaModalEksporLogbook() {
+    document.getElementById('modalEksporLogbook').classList.remove('hidden');
+}
+function tutupModalEksporLogbook() {
+    document.getElementById('modalEksporLogbook').classList.add('hidden');
+}
+</script>
 
 <?php include '../includes/footer.php'; ?>

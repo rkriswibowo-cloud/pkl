@@ -113,6 +113,12 @@ if (!empty($params)) {
 $stmt->execute();
 $daftar_nilai = $stmt->get_result();
 
+$export_params = http_build_query(array_filter([
+    'search' => $search_query,
+    'prodi'  => $filter_prodi,
+    'status' => $filter_status
+]));
+
 include '../includes/header.php';
 ?>
 
@@ -129,11 +135,17 @@ include '../includes/header.php';
                     Rekap gabungan penilaian dari Pembimbing Lapangan (60%) dan Dosen Pembimbing Kampus (40%).
                 </p>
             </div>
-            <div class="flex items-center gap-2">
-                <button type="button" onclick="window.print()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold border transition" style="background: var(--dashboard-surface); border-color: var(--dashboard-border); color: var(--dashboard-text);">
+            <div class="flex flex-wrap items-center gap-2">
+                <a href="export_nilai_excel.php?format=excel<?= !empty($export_params) ? '&' . $export_params : '' ?>" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition shadow-sm" title="Unduh format spreadsheet Excel dengan formula">
+                    <i class="fas fa-file-excel"></i> Ekspor Excel
+                </a>
+                <a href="export_nilai_excel.php?format=csv<?= !empty($export_params) ? '&' . $export_params : '' ?>" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white transition shadow-sm" title="Unduh CSV siap impor SIAKAD">
+                    <i class="fas fa-file-csv"></i> Ekspor SIAKAD
+                </a>
+                <button type="button" onclick="window.print()" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold border transition" style="background: var(--dashboard-surface); border-color: var(--dashboard-border); color: var(--dashboard-text);">
                     <i class="fas fa-print"></i> Cetak Rekap
                 </button>
-                <a href="dashboard.php" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold border transition" style="background: var(--dashboard-surface); border-color: var(--dashboard-border); color: var(--dashboard-text);">
+                <a href="dashboard.php" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold border transition" style="background: var(--dashboard-surface); border-color: var(--dashboard-border); color: var(--dashboard-text);">
                     <i class="fas fa-arrow-left"></i> Dashboard
                 </a>
             </div>
@@ -330,12 +342,20 @@ include '../includes/header.php';
                                         <?php endif; ?>
                                     </td>
                                     <td class="py-3 px-3 text-center">
-                                        <button type="button" 
-                                                onclick="bukaDetailNilai(<?= htmlspecialchars(json_encode($row)) ?>)"
-                                                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold border hover:bg-blue-600 hover:text-white transition"
-                                                style="border-color: var(--dashboard-border); color: var(--dashboard-text);">
-                                            <i class="fas fa-eye"></i> Detail
-                                        </button>
+                                        <div class="flex items-center justify-center gap-1.5">
+                                            <button type="button" 
+                                                    onclick="bukaDetailNilai(<?= htmlspecialchars(json_encode($row)) ?>)"
+                                                    class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold border hover:bg-blue-600 hover:text-white transition"
+                                                    style="border-color: var(--dashboard-border); color: var(--dashboard-text);"
+                                                    title="Lihat Detail Nilai">
+                                                <i class="fas fa-eye"></i> Detail
+                                            </button>
+                                            <a href="cetak_nilai_pdf.php?id_mahasiswa=<?= $row['id_mahasiswa'] ?>" target="_blank"
+                                               class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition"
+                                               title="Cetak Lembar Nilai Resmi (PDF)">
+                                                <i class="fas fa-print"></i> PDF
+                                            </a>
+                                        </div>
                                     </td>
                                 </tr>
                             <?php endwhile; ?>
@@ -445,7 +465,10 @@ include '../includes/header.php';
             </div>
         </div>
 
-        <div class="p-4 border-t flex items-center justify-end" style="border-color: var(--dashboard-border);">
+        <div class="p-4 border-t flex items-center justify-between" style="border-color: var(--dashboard-border);">
+            <a id="btnCetakModal" href="#" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white transition shadow-sm">
+                <i class="fas fa-print"></i> Cetak Lembar Nilai Resmi (PDF)
+            </a>
             <button type="button" onclick="tutupDetailNilai()" class="px-5 py-2 rounded-lg text-xs font-semibold border transition" style="background: var(--dashboard-surface); border-color: var(--dashboard-border); color: var(--dashboard-text);">
                 Tutup
             </button>
@@ -458,6 +481,8 @@ function bukaDetailNilai(row) {
     document.getElementById('detailMahasiswa').innerText = row.nama + ' - NIM: ' + (row.nim || '-') + ' (' + row.prodi + ')';
     document.getElementById('detailDospemLapangan').innerText = 'Dospem: ' + (row.nama_dospem_lapangan || 'Belum di-set');
     document.getElementById('detailDospemPKL').innerText = 'Dospem: ' + (row.nama_dospem_pkl || 'Belum di-set');
+
+    document.getElementById('btnCetakModal').href = 'cetak_nilai_pdf.php?id_mahasiswa=' + (row.id_mahasiswa || row.id);
 
     document.getElementById('detailNilaiAkhir').innerText = row.nilai_akhir !== null ? parseFloat(row.nilai_akhir).toFixed(1) : 'Belum Lengkap';
     document.getElementById('detailHuruf').innerText = row.nilai_huruf || '-';
